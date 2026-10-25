@@ -2,7 +2,7 @@ import SwiftUI
 
 enum ASMBrand {
     static let name = "a spotify mod"
-    static let build = "core-ad-requests 1"
+    static let build = "preview-stable 1"
     static func style(_ button: UIButton) {
         button.setImage(nil, for: .normal)
         button.setTitle(":3", for: .normal)

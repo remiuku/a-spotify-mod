@@ -1,6 +1,18 @@
 import Foundation
 
 enum KaraokePlayerPreviewPolicy {
+    // Three two-line rows plus header, spacing and padding; stable across
+    // loading/source changes and per-word animation updates.
+    static let contentHeight: Double = 236
+    static let rowHeight: Double = 50
+
+    static func headerReservation(contentHeight: Double) -> Double {
+        max(140, min(240, contentHeight.isFinite ? contentHeight : 184)) + 16
+    }
+    static func shiftAfterGap(y: Double, seam: Double, occupied: Double) -> Bool {
+        guard y.isFinite, seam.isFinite, occupied.isFinite, seam >= 0, occupied >= 0 else { return false }
+        return y >= seam + occupied - 0.5
+    }
     struct Row: Equatable, Identifiable {
         let id: Int
         let text: String

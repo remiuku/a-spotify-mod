@@ -1,46 +1,33 @@
-# Custom lyrics in the player and header protection
+# player preview update
 
-**Lyrics → Lyrics viewers → Use custom lyrics in the player** controls the
-replacement. It defaults on for custom viewers and preserves older preferences.
-Selecting Spotify, disabling custom lyrics/the replacement, using an unsupported
-source or playing a non-music item restores the native surfaces. Imported
-spoti.pw/Vitrine interfaces retain their own player integration.
+Current local build: preview-stable 1, Spotify 9.1.94.
 
-The stock player lyrics card is replaced in place with a lightweight custom-source
-preview: nearby lines follow the shared playback clock, including pause and seeks.
-Tap the card to open the currently selected full viewer (Eevee, Sweet, spoti.pw or
-Vitrine). It uses the same cached/coalesced lookup model as the full-screen view.
-The duplicate Canvas lyric overlay is hidden and the native inline lyrics
-container below the artwork is collapsed, preserving its last native visibility
-request for restoration. The independent
-Custom Lyrics shortcut remains available on songs for which Spotify does not
-create a card. A missing native card is not fabricated by modifying Spotify's
-private collection data source.
+The preview uses custom lyric sources independently of Spotify's native lyrics
+availability. It shows three rows using the existing Sweet word renderer, with
+bounded font/fill/glow, pause/seek handling and reduced-motion support.
 
-The preview is deliberately small: three context lines and line highlighting,
-without another full renderer, credits footer, toolbar, translation task or audio
-engine. Opening the full viewer provides its normal effects and controls.
-Native card children, tap recognizers, visibility, interaction and accessibility
-state are saved and restored; scrolling gestures remain enabled. Hosting
-controller containment and teardown follow the card's window lifecycle.
+A positive-coordinate layout gap places it after player controls or at the
+native lyrics card. Following attributes are copied and adjusted without
+changing Spotify item counts, snapshots, scroll offsets or insets. Native
+visibility is restored on reuse or when replacement is disabled.
 
-The Library/Search gradient header correction no longer clears arbitrary sibling
-header fills or hides their gradient scrims. Only the scrolling list's ancestor
-backgrounds are cleared for the wash. Native top-edge effects remain visible and
-the list clips to its bounds, protecting pinned titles/filter chips from scrolled
-rows. The Home-specific styling path is preserved.
+The card has a fixed 236-point content area, three 50-point row slots and a
+252-point reservation including spacing. Live SwiftUI height measurement was
+removed after a phone run showed the reserved height changing during startup.
+The embedded hosting view ignores window safe-area changes to avoid clipping
+and reflow while scrolling.
 
-The existing classes were confirmed in the supplied Spotify 9.1.88 binary:
-Lyrics_CardElementImpl.CardView, Canvas_CommonImpl.CanvasNowPlayingLyricsView,
-Lyrics_NPVContainerKit.LyricsContainerView, and
-YourLibrary_YourLibraryXImpl.YourLibraryViewController. Hooks use UIView
-layout/window/visibility lifecycle methods; no new private navigation selector is invoked.
+Settings uses the existing :3 navigation button rather than inserting an extra
+row and changing the native list during layout. Player declutter checks are
+scoped to the player and no longer force nested collection layout during sizing.
+These remove unsafe interactions; the exact earlier intermittent settings
+assertion was not established and its elimination is not proven.
 
-Validation: the 24 existing regression suites pass and the new player-preview
-suite passes after correcting its localization test stub. The real preview UI,
-Sweet renderer, no-gravity scene and translation settings typecheck against the
-iOS 27.1 SDK at a 16.1 deployment target, with unrelated host adapters stubbed.
-Edited hook/header source parses and new hooks pass Orion preprocessing. No IPA was built. Verify on the phone: Library
-scrolling at the top, one custom card, correct song after a skip, pause/seek,
-tap-to-open without also opening native lyrics, Spotify/off restoration, and
-tracks with no native lyric card. Actual header/layout behavior is unconfirmed.
+Validation: 37 personal-build regression suites, real iOS SDK compilation,
+package/resource checks and full device-copy verification passed. The user
+confirmed the preview is visible and accepted the latest update. Wider runtime
+coverage remains incomplete. The publication runner skips the bootstrap test
+because its private binary inputs are intentionally absent.
+
+Credits and licence notices remain in CREDITS.md, LICENSING.md and the source
+resources. No app IPA, SDK, signing/pairing material or device logs are included.

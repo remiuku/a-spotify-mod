@@ -42,3 +42,20 @@ alternative.sweetSyllables = [.init(text: "Sweet source words", startMs: 0, endM
 check(KaraokePlayerPreviewPolicy.rows(.init(lines: [alternative], songWriters: [], providerCode: nil)).first?.text == "Sweet source words",
       "Preview uses the same richer custom-source words as the full viewer")
 print("PASS player preview: custom/stock mode restoration policy, source/music/interface guards, backward-compatible preferences, duplicate identities, bounded context and seek-aware timing")
+
+check(KaraokePlayerPreviewPolicy.headerReservation(contentHeight: 170) == 186, "Owned scroll header reserves only measured content plus separation")
+check(KaraokePlayerPreviewPolicy.headerReservation(contentHeight: .nan) == 200, "Invalid sizing cannot poison scroll geometry")
+check(KaraokePlayerPreviewPolicy.headerReservation(contentHeight: -5) == 156 && KaraokePlayerPreviewPolicy.headerReservation(contentHeight: 1000) == 256, "Preview size stays bounded for loading, long lyrics and large text")
+print("PASS independent preview sizing: measured compact height, finite fallback and bounded scroll-header reservation")
+
+check(!KaraokePlayerPreviewPolicy.shiftAfterGap(y: 700, seam: 800, occupied: 0), "Playback controls before seam keep native position")
+check(KaraokePlayerPreviewPolicy.shiftAfterGap(y: 800, seam: 800, occupied: 0), "First following card moves when native lyrics are missing")
+check(!KaraokePlayerPreviewPolicy.shiftAfterGap(y: 800, seam: 800, occupied: 300), "Replacing native lyric card does not move its own anchor")
+check(KaraokePlayerPreviewPolicy.shiftAfterGap(y: 1100, seam: 800, occupied: 300), "Following cards move by only the replacement height difference")
+check(!KaraokePlayerPreviewPolicy.shiftAfterGap(y: .nan, seam: 800, occupied: 0), "Invalid native positions cannot change layout")
+print("PASS positive preview gap: controls preserved, source-independent insertion, replacement boundary and finite geometry")
+
+let footprint = 3 * KaraokePlayerPreviewPolicy.rowHeight + 2 * 8 + 20 + 12 + 36
+check(footprint <= KaraokePlayerPreviewPolicy.contentHeight, "Header, three two-line rows, spacing and padding fit without clipping")
+check(KaraokePlayerPreviewPolicy.headerReservation(contentHeight: KaraokePlayerPreviewPolicy.contentHeight) == 252, "Loading and active lyric windows reserve one stable footprint")
+print("PASS stable preview footprint: three rows, header and padding fit fixed content height")

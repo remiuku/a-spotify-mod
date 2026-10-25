@@ -1,24 +1,26 @@
 import SwiftUI
 import UIKit
 
-/// One shared custom-source card; full rendering stays in the selected viewer.
+/// One shared custom-source card with a bounded use of Sweet's existing renderer.
 /// It reuses KaraokeLookupModel's coalesced requests instead of fetching through
 /// Spotify's native has_lyrics gate or starting another renderer/audio engine.
 @available(iOS 15.0, *)
 private struct KaraokePlayerPreview: View {
     @StateObject private var model = KaraokeLookupModel()
     @State private var options = UserDefaults.karaokeOptions
+    @State private var mild = UserDefaults.mildLyricsOptions
+    let visible: () -> Bool
     var body: some View {
         Button { KaraokeOverlayPresenter.present() } label: {
-            VStack(alignment: .leading, spacing: 16) {
+            VStack(alignment: .leading, spacing: 12) {
                 HStack {
-                    ASMText(options.renderer.displayName).font(.system(size: 18, weight: .bold))
+                    ASMText("Lyrics").font(.system(size: 15, weight: .semibold)).opacity(0.8)
                     Spacer()
                     ASMImage(systemName: "arrow.up.left.and.arrow.down.right")
-                        .font(.system(size: 16, weight: .semibold))
+                        .font(.system(size: 13, weight: .semibold)).opacity(0.8)
                 }
                 switch model.phase {
-                case .ready(let lyrics): KaraokePlayerPreviewLines(rows: KaraokePlayerPreviewPolicy.rows(lyrics), options: options)
+                case .ready(let lyrics): KaraokePlayerPreviewLines(lyrics: lyrics, options: options, mild: mild, visible: visible)
                 case .loading:
                     status("Looking for lyrics…", detail: "Tap to open your lyrics viewer.")
                 case .missing:
@@ -28,16 +30,22 @@ private struct KaraokePlayerPreview: View {
                 case .noTrack:
                     status("Play a song to see lyrics", detail: "")
                 }
-            }.foregroundColor(.white).padding(20)
-                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+            }.foregroundColor(.white).padding(18)
+                .frame(maxWidth: .infinity, alignment: .topLeading)
+                .frame(height: CGFloat(KaraokePlayerPreviewPolicy.contentHeight), alignment: .topLeading)
+                .background(LinearGradient(colors: [.white.opacity(0.10), .black.opacity(0.18)],
+                    startPoint: .topLeading, endPoint: .bottomTrailing), in: RoundedRectangle(cornerRadius: 20))
+                .overlay(RoundedRectangle(cornerRadius: 20).strokeBorder(.white.opacity(0.08), lineWidth: 0.5))
                 .contentShape(Rectangle())
         }.buttonStyle(.plain)
+            .ignoresSafeArea(.container)
             .accessibilityHint("Open the selected custom lyrics viewer")
             .onAppear { model.sync() }
             .onReceive(NotificationCenter.default.publisher(for: .eeveeKaraokeLyricsChanged)) { _ in model.sync() }
             .onReceive(NotificationCenter.default.publisher(for: UserDefaults.didChangeNotification)
                 .debounce(for: .milliseconds(50), scheduler: DispatchQueue.main)) { _ in
                 options = UserDefaults.karaokeOptions
+                mild = UserDefaults.mildLyricsOptions
                 model.sync()
             }
     }
@@ -45,34 +53,133 @@ private struct KaraokePlayerPreview: View {
         VStack(alignment: .leading, spacing: 8) {
             ASMText(title).font(.system(size: 23, weight: .bold))
             if !detail.isEmpty { ASMText(detail).font(.system(size: 13)).opacity(0.6) }
-        }.frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+        }.frame(maxWidth: .infinity, minHeight: 80, alignment: .leading)
     }
 }
 
 @available(iOS 15.0, *)
 private struct KaraokePlayerPreviewLines: View {
-    let rows: [KaraokePlayerPreviewPolicy.Row]
     let options: KaraokeOptions
+    let mild: MildLyricsOptions
+    let prepared: SweetPreparedLyrics
+    @StateObject private var clock: KaraokePreviewClock
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    private var alignment: HorizontalAlignment {
-        options.textAlignment == .center ? .center : options.textAlignment == .trailing ? .trailing : .leading
+    init(lyrics: KaraokeLyricsDto, options: KaraokeOptions, mild: MildLyricsOptions, visible: @escaping () -> Bool) {
+        var cardOptions = options; cardOptions.textAlignment = .leading
+        self.options = cardOptions
+        // Mild belongs to Sweet; the other selected viewers keep the neutral compact style.
+        var compactOptions = mild
+        if options.renderer != .sweetLyrics { compactOptions.flags["enabled"] = false }
+        self.mild = compactOptions
+        let document = SweetLyricsAdapter.document(from: lyrics)
+        var prepared = SweetPreparedLyrics(document: compactOptions.flag("enabled")
+            ? MildRenderPolicy.document(document, options: compactOptions) : document,
+            romanized: false, simple: options.sweetSimpleLyrics)
+        prepared.lines.removeAll { $0.isInterlude || $0.isBackground || $0.plainText.isEmpty }
+        self.prepared = prepared
+        _clock = StateObject(wrappedValue: KaraokePreviewClock(visible: visible))
     }
     var body: some View {
-        TimelineView(.periodic(from: .now, by: 0.15)) { _ in
-            let position = KaraokePlaybackTracker.shared.currentLyricPositionMs()
-            let focus = KaraokePlayerPreviewPolicy.focus(rows, position: position)
-            VStack(alignment: alignment, spacing: 12) {
-                ForEach(KaraokePlayerPreviewPolicy.window(rows, position: position)) { row in
-                    let active = focus.map { rows[$0].id == row.id } == true && row.start <= position
-                        && (row.end <= row.start || position < row.end)
-                    ASMLyricText(row.text).font(.system(size: 23, weight: .bold))
-                        .lineLimit(2).multilineTextAlignment(options.textAlignment == .center ? .center : options.textAlignment == .trailing ? .trailing : .leading)
-                        .frame(maxWidth: .infinity, alignment: Alignment(horizontal: alignment, vertical: .center))
-                        .opacity(active ? 1 : 0.4)
-                }
-            }.frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-                .animation(reduceMotion ? nil : .easeInOut(duration: 0.2), value: focus)
+        let position = Double(clock.sample.position) / 1000 + (mild.flag("enabled") ? mild.number("offset") : 0)
+        let window = KaraokePreviewAnimationPolicy.window(prepared, position: position)
+        KaraokePreviewAnimatedWindow(lyrics: window, sample: clock.sample, position: position,
+            options: options, mild: mild, reduceMotion: reduceMotion)
+            .id(window.lines)
+            .frame(maxWidth: .infinity, alignment: .top)
+            .onAppear { clock.start() }
+            .onDisappear { clock.stop() }
+            .onReceive(NotificationCenter.default.publisher(for: UIApplication.willResignActiveNotification)
+                .receive(on: DispatchQueue.main)) { _ in clock.stop() }
+            .onReceive(NotificationCenter.default.publisher(for: UIApplication.didBecomeActiveNotification)
+                .receive(on: DispatchQueue.main)) { _ in clock.start() }
+    }
+}
+
+@available(iOS 15.0, *)
+private struct KaraokePreviewAnimatedWindow: View {
+    @State private var animator: SweetLyricsAnimator
+    let sample: KaraokePreviewClock.Sample
+    let position: Double
+    let options: KaraokeOptions
+    let mild: MildLyricsOptions
+    let reduceMotion: Bool
+    init(lyrics: SweetPreparedLyrics, sample: KaraokePreviewClock.Sample, position: Double,
+         options: KaraokeOptions, mild: MildLyricsOptions, reduceMotion: Bool) {
+        _animator = State(initialValue: SweetLyricsAnimator(lyrics: lyrics, simple: options.sweetSimpleLyrics))
+        self.sample = sample; self.position = position; self.options = options
+        self.mild = mild; self.reduceMotion = reduceMotion
+    }
+    var body: some View {
+        animator.step(position: position, now: sample.now, blurEnabled: false, isPlaying: sample.playing)
+        let visuals = animator.visuals // Pass value state to rows on every frame, as the full viewer does.
+        let focus = animator.lyrics.lines.indices.contains(animator.focusIndex)
+            ? animator.lyrics.lines[animator.focusIndex].id : 0
+        return VStack(alignment: .leading, spacing: 8) {
+            ForEach(Array(animator.lyrics.lines.enumerated()), id: \.element.id) { index, original in
+                let line = aligned(mild.flag("enabled") ? MildRenderPolicy.line(original, position: position, options: mild) : original)
+                let visual = mild.flag("enabled") ? MildRenderPolicy.visual(visuals[index], line: original,
+                    focus: focus, position: position, options: mild, reduceMotion: reduceMotion) : visuals[index]
+                SweetLyricLineView(line: line, visual: KaraokePreviewAnimationPolicy.compact(visual, reduceMotion: reduceMotion),
+                    typography: typography)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .frame(height: CGFloat(KaraokePlayerPreviewPolicy.rowHeight), alignment: .top).clipped()
+            }
+        }.transaction { $0.animation = nil }
+    }
+    private func aligned(_ original: SweetPreparedLine) -> SweetPreparedLine {
+        var line = original
+        if options.textAlignment != .center { line.oppositeAligned = options.textAlignment == .trailing }
+        return line
+    }
+    private var typography: SweetLyricsTypography {
+        var style = SweetLyricsTypography(fontSize: 21)
+        style.weight = .semibold
+        style.cqw = 0; style.blurScale = 0
+        style.centered = options.textAlignment == .center
+        style.simple = options.sweetSimpleLyrics
+        if mild.flag("enabled") {
+            style.fontSize *= max(0.8, min(1.2, mild.number("font_scale")))
+            style.font = SweetLyricsFontChoice(stored: mild.choice("font_name"))
+            style.glowScale = min(1, mild.number("glow_scale"))
+            style.fillSoftness = mild.number("edge")
         }
+        // The default playful context stays disabled even if full-view effects are enabled.
+        return style
+    }
+}
+
+@available(iOS 15.0, *)
+private final class KaraokePreviewDisplayTarget: NSObject {
+    weak var clock: KaraokePreviewClock?
+    @objc func tick(_ link: CADisplayLink) { clock?.tick(link.timestamp) }
+}
+
+@available(iOS 15.0, *)
+private final class KaraokePreviewClock: ObservableObject {
+    struct Sample { var position = 0; var playing = false; var now = CACurrentMediaTime() }
+    @Published private(set) var sample = Sample()
+    private let visible: () -> Bool
+    private var link: CADisplayLink?
+    private var target: KaraokePreviewDisplayTarget?
+    init(visible: @escaping () -> Bool) { self.visible = visible }
+    deinit { link?.invalidate() }
+    func start() {
+        guard link == nil, UIApplication.shared.applicationState == .active else { return }
+        let target = KaraokePreviewDisplayTarget(); target.clock = self
+        let link = CADisplayLink(target: target, selector: #selector(KaraokePreviewDisplayTarget.tick(_:)))
+        link.preferredFramesPerSecond = 30
+        self.target = target; self.link = link
+        link.add(to: .main, forMode: .common)
+        tick(CACurrentMediaTime())
+    }
+    func stop() { link?.invalidate(); link = nil; target = nil }
+    func tick(_ now: Double) {
+        guard UIApplication.shared.applicationState == .active, visible() else { return }
+        let playback = KaraokePlaybackTracker.shared.lyricSnapshot()
+        guard KaraokePreviewAnimationPolicy.shouldPublish(visible: true, position: playback.positionMs,
+            playing: playback.isPlaying, previousPosition: sample.position, previousPlaying: sample.playing) else { return }
+        link?.preferredFramesPerSecond = ProcessInfo.processInfo.isLowPowerModeEnabled ? 15 : 30
+        sample = Sample(position: playback.positionMs, playing: playback.isPlaying, now: now)
     }
 }
 
@@ -91,17 +198,39 @@ private final class KaraokeNativeVisibility {
 }
 
 @available(iOS 15.0, *)
-private final class KaraokePlayerCardHost {
+final class KaraokePlayerCardHost {
     private let hosting = UIHostingController(rootView: AnyView(EmptyView()))
     private weak var owner: UIViewController?
     private var content: [KaraokeNativeVisibility] = []
     private var taps: [(recognizer: UITapGestureRecognizer, enabled: Bool)] = []
     private var installed = false
+    init() {
+        // This is a scrolling card, not a full-screen page. Inheriting the
+        // window's changing safe-area intersection clips/reflows it on scroll.
+        if #available(iOS 16.4, *) { hosting.safeAreaRegions = [] }
+    }
     deinit { restore() }
+    private func visible() -> Bool {
+        guard installed, let window = hosting.viewIfLoaded?.window else { return false }
+        var controller = owner
+        while let current = controller {
+            if current.presentedViewController != nil { return false }
+            controller = current.parent
+        }
+        var rect = hosting.view.convert(hosting.view.bounds, to: window).intersection(window.bounds)
+        var cursor: UIView? = hosting.view
+        while let view = cursor {
+            if view.isHidden || view.alpha < 0.01 { return false }
+            if view.clipsToBounds { rect = rect.intersection(view.convert(view.bounds, to: window)) }
+            if rect.isNull || rect.isEmpty { return false }
+            cursor = view.superview
+        }
+        return true
+    }
     func update(_ card: UIView, enabled: Bool) {
         guard enabled, card.window != nil else { restore(); return }
         if !installed {
-            hosting.rootView = AnyView(KaraokePlayerPreview().modifier(ASMWhimsyRefresh()))
+            hosting.rootView = AnyView(KaraokePlayerPreview(visible: { [weak self] in self?.visible() ?? false }).modifier(ASMWhimsyRefresh()))
             hosting.view.backgroundColor = .clear; hosting.view.clipsToBounds = true
             installed = true
         }
@@ -164,8 +293,11 @@ enum KaraokePlayerSurfaces {
     private static var lastEnabled: Bool?
     private static var lastHidden: Set<PlayerPart> = []
     private static let optionsObserver = ASMMainNotificationDelivery.observe(forName: UserDefaults.didChangeNotification) { _ in refresh() }
-    private static let trackObserver = NotificationCenter.default.addObserver(forName: .eeveeKaraokeLyricsChanged,
-        object: nil, queue: .main) { _ in refresh() }
+    private static let trackObserver = ASMMainNotificationDelivery.observe(forName: .eeveeKaraokeLyricsChanged) { _ in refresh() }
+    static var wantsIndependentPreview: Bool {
+        let hidden = UserDefaults.playerOptions.hiddenParts
+        return enabled && !hidden.contains(.lyricsCard) && !hidden.contains(.allCards)
+    }
     private static var enabled: Bool {
         KaraokePlayerPreviewPolicy.enabled(options: UserDefaults.karaokeOptions,
             supportedSource: ASMSongLyricsContext.source(KaraokePlaybackTracker.shared.currentTrackId()).supportsCustomLyricsView,
@@ -176,6 +308,7 @@ enum KaraokePlayerSurfaces {
         guard lastEnabled != enabled || lastHidden != hidden else { return }
         lastEnabled = enabled
         lastHidden = hidden
+        KaraokeIndependentPreview.refresh()
         for card in cards.allObjects { updateCard(card) }
         for canvas in canvases.allObjects { updateCanvas(canvas) }
         for inline in inlineViews.allObjects { updateInline(inline) }
@@ -185,6 +318,7 @@ enum KaraokePlayerSurfaces {
         let hidden = UserDefaults.playerOptions.hiddenParts
         let show = enabled && !hidden.contains(.lyricsCard) && !hidden.contains(.allCards)
         let existing = objc_getAssociatedObject(card, &cardKey) as? KaraokePlayerCardHost
+        if KaraokeIndependentPreview.owns(card) { existing?.restore(); return }
         guard card.window != nil else { existing?.restore(); return }
         // Replace the whole card cell, including a stock header that can be a
         // sibling of CardView. The glass pane stays behind the content view.

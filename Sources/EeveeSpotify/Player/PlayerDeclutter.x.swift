@@ -85,6 +85,18 @@ enum PlayerDeclutter {
     }
 
     static func hiddenCard(for cell: UIView) -> PlayerPart? {
+        // Element_List cells are shared with Settings. Inspect only player cells,
+        // and never recursively lay out a collection during diffable sizing.
+        var responder: UIResponder? = cell
+        var inPlayer = false
+        while let current = responder {
+            if let controller = current as? UIViewController,
+               NSStringFromClass(type(of: controller)).contains("NowPlaying_ViewImpl") {
+                inPlayer = true; break
+            }
+            responder = current.next
+        }
+        guard inPlayer else { return nil }
         let content = (cell as? UICollectionViewCell)?.contentView.subviews.first
         let now = CACurrentMediaTime()
         var born = now
@@ -109,7 +121,6 @@ enum PlayerDeclutter {
         var queue = [cell]
         while !queue.isEmpty {
             let view = queue.removeFirst()
-            if view !== cell, view is UICollectionView { view.layoutIfNeeded() }
             names += NSStringFromClass(type(of: view))
             if let id = view.accessibilityIdentifier { names += id }
             queue += view.subviews

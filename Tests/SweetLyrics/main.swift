@@ -108,3 +108,30 @@ check(heldAnimator.snapped && heldAnimator.focusIndex == prepared.lines.last?.id
 heldAnimator.step(position: 3.3, now: 15, blurEnabled: true, frameInterval: 1.0/30, isPlaying: true)
 check(heldAnimator.snapped && heldAnimator.focusIndex == lead.id, "Resume/backward seek restores the correct line")
 print("PASS Sweet pause: no focus/highlight advancement or latency lead while held; paused seeks and resume retained")
+
+// The compact card runs these exact production policies and Sweet's existing animator.
+var previewPrepared = SweetPreparedLyrics(document: SweetLyricsAdapter.document(from: .init(
+    lines: (0..<100).map { index in KaraokeLineDto(syllables: [syllable("word", index * 2000, index * 2000 + 1000)], startMs: index * 2000, endMs: index * 2000 + 1000) },
+    songWriters: [], providerCode: nil)), romanized: false)
+previewPrepared.lines.removeAll { $0.isBackground || $0.isInterlude }
+let previewWindow = KaraokePreviewAnimationPolicy.window(previewPrepared, position: 81)
+check(previewWindow.lines.count == 3 && previewWindow.lines.map(\.id) == Array(previewPrepared.lines[39...41]).map(\.id), "Preview keeps only three nearby original identities")
+check(KaraokePreviewAnimationPolicy.window(previewPrepared, position: 1).lines.first?.start == 0, "Backward seek restores the beginning immediately")
+var previewEmpty = previewPrepared; previewEmpty.lines = []
+check(KaraokePreviewAnimationPolicy.window(previewEmpty, position: 5).lines.isEmpty, "Missing lyrics never form an invalid slice")
+check(!KaraokePreviewAnimationPolicy.shouldPublish(visible: false, position: 200, playing: true, previousPosition: 100, previousPlaying: true), "Offscreen cards publish no playback frames")
+check(!KaraokePreviewAnimationPolicy.shouldPublish(visible: true, position: 200, playing: false, previousPosition: 200, previousPlaying: false), "Held pause freezes the card instead of advancing wall-clock effects")
+check(KaraokePreviewAnimationPolicy.shouldPublish(visible: true, position: 100, playing: false, previousPosition: 200, previousPlaying: false), "Seeking while paused still redraws")
+check(KaraokePreviewAnimationPolicy.shouldPublish(visible: true, position: 200, playing: false, previousPosition: 200, previousPlaying: true), "Pause transition is delivered even at the same timestamp")
+var strong = SweetLineVisual(); strong.blur = 10; strong.scale = 2
+strong.lead = [[SweetSyllableVisual(glyph: SweetGlyphVisual(scale: 2, yOffset: -1, glow: 3, gradient: 0.42))]]
+let compact = KaraokePreviewAnimationPolicy.compact(strong, reduceMotion: false)
+check(compact.blur == 0 && compact.scale <= 1.025 && compact.lead[0][0].glyph.scale <= 1.035 && abs(compact.lead[0][0].glyph.yOffset) <= 0.025, "Card motion is bounded independently of full-view effects")
+let reduced = KaraokePreviewAnimationPolicy.compact(strong, reduceMotion: true)
+check(reduced.scale == 1 && reduced.lead[0][0].glyph.scale == 1 && reduced.lead[0][0].glyph.yOffset == 0 && near(reduced.lead[0][0].glyph.gradient, 0.42), "Reduce Motion removes movement without losing word fill")
+let previewAnimator = SweetLyricsAnimator(lyrics: previewWindow)
+previewAnimator.step(position: 80.25, now: 1, blurEnabled: false, isPlaying: true)
+let atQuarter = previewAnimator.visuals[1].lead[0][0].glyph.gradient
+previewAnimator.step(position: 80.75, now: 1.5, blurEnabled: false, isPlaying: true)
+check(previewAnimator.visuals[1].lead[0][0].glyph.gradient > atQuarter, "The reused renderer advances the current word within a line")
+print("PASS compact preview: bounded original-timing window, backward seek, paused seeking, hidden/paused publication gate, gentle motion and Reduce Motion")

@@ -23,12 +23,16 @@ away and jelly start at zero. an explicitly saved on/off choice is preserved.
 
 ### does it work
 
-this snapshot targets spotify **9.1.88**. latest local candidate is
-`core-ad-requests 1`. its 37 focused check suites and ios build/package checks
-passed before this publication cleanup. that does not mean every phone feature
-is proven: the newest ad fix still needs phone confirmation. this repo snapshot
-passed its available source checks too (bootstrap snapshot skipped because its
-binary inputs are excluded). no ios rebuild was done for this upload.
+current source matches the **spotify 9.1.94** preview work (`preview-stable 1`).
+the animated preview is now visible on the phone. it uses a fixed three-row
+card so loading and word animation do not keep changing its height. the settings
+integration also avoids changing spotify's list during layout.
+
+the personal build passed all 37 focused suites and ios compile/package checks.
+this source copy still excludes private binary inputs and the built-in spicy
+key; its local runner skips the bootstrap snapshot check for that reason.
+phone confirmation of every feature and the intermittent settings crash is
+still incomplete. [preview notes](docs/PREVIEW_UPDATE.md).
 spoti.pw/vitrine interfaces require ios 26.
 
 spotify ai dj and other premium server features are not supplied by this mod.
