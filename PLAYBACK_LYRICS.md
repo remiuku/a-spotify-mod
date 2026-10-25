@@ -1,0 +1,25 @@
+# Current follow-up
+
+See SWEET_PAUSE.md for the pause fix and latest UI. The quick viewer toolbar described in the historical feature list below has been removed; Sound is a header icon and viewer selection stays in settings.
+
+# Playback and lyrics follow-up
+
+## Available in this candidate
+- Quick sound: player more menu under Spotify/spoti.pw, Vitrine sound action, and the Sound button inside the custom lyrics sheet. Same host speed/pitch and JamesDSP engine; no second audio pipeline. Sliders and speed buttons apply immediately; effect switches reuse saved amounts and require the master switch.
+- Lyrics viewer menu: custom sheet bottom bar; spoti.pw/Vitrine inline lyrics options menu. Five viewers remain independent of the three app interfaces. Spotify's native page still depends on native lyric availability.
+- Lyrics > Lyrics viewers > Lyric presets & reset: three slots per custom viewer. Display/motion/background/timing only; source selection/order, source blending, exclusions, audio, account settings and other viewers survive restore/reset. Eevee display alignment/blur now has an isolated preference, initially migrated from the shared legacy values. Sweet/Mild presets include playful effects.
+- Source metadata: inline TTML x-translation/x-roman, Apple metadata keyed by line, and supported Spicy JSON metadata flow to host/viewers. Uses the preferred translation language when supplied, otherwise the first available; prefers Latin pronunciation. No network machine translation added. Enable host metadata under Lyrics viewers; imported viewers retain their own pronunciation/translation switches. A source must actually supply metadata.
+- Recovery: two previous foreground launches that failed to reach a visible app window within 12 seconds select Spotify on the next launch. Backgrounding/normal termination clears the attempt. Saved overhaul settings remain intact; retry from Look & feel > Interface. It cannot detect a later screen-specific crash.
+- Look & feel > Cover artwork > Lock screen: Off (default), animated album artwork, lyrics on cover, or lyrics over animation. Existing Apple album-video lookup and per-album local/custom overrides supply video. Animated modes require iOS 26 and supported square animated artwork. An exported local clip is at most eight seconds, one export runs at a time, and cache pruning targets 120 MiB. Still lyric covers provide fallback while video prepares. System Reduce Motion and the configured low-power policy suppress animation. No Live Activity extension is installed.
+
+## Explicit limits and next work
+Phone behavior has not been confirmed. In LiveContainer the host controls Now Playing/background execution; it may override guest artwork or suspend updates. This candidate uses public MediaPlayer artwork APIs, keeps metadata titles/artist/audio unchanged, checks observed track identity, and preserves the native progress anchor. Video exports may lag short lyric lines; static lyric artwork updates first. It uses album video/custom clips, not a new Spotify Canvas fetcher. Cache is pruned on exports; current/in-use clips are retained.
+
+Taurus is a design/source research reference, not an imported fourth UI or audio engine. Inspected commit: b33f98b7a0ebbf45f465203815461e90bd51a2c0. Its README calls it a GPL fork while the root LICENSE says PolyForm Strict and identifies chroma/spoti upstream. No Taurus implementation or model is copied into this candidate.
+
+AI Sing and head-tracked spatial voice remain unimplemented. The inspected separator operates on 44.1 kHz stereo decoded-source frames in two-second windows with an eight-second timeline; our confirmed JamesDSP output is 48 kHz. The full model manifest is 210,426,814 bytes (about 201 MiB), and a lighter manifest is also present. Shipping a functional implementation needs a source-queue owner, sample-rate conversion, model installation/integrity checks, bounded worker fallback, background timing validation and a resolved provenance/license record. An output meter callback cannot act as a stem separator. Existing stereo widening/crossfeed/reverb remain available and work through JamesDSP.
+
+Reference: https://gitlab.com/taurustweak/taurus and its tweak/Sources/Shared/{Audio,Sing,LockScreenArtwork,LockScreenLyrics} source directories. Existing imported Spoti and Vitrine revisions/licenses remain documented in INTERFACES.md.
+
+## Phone verification
+Import a-spotify-mod-features-9.1.88.ipa as an update in LiveContainer, then fully restart the guest. In each interface open a song, use the player sound action, try 0.75x/1.25x and a small pitch change, then reset. Switch custom lyric viewers; enable source pronunciation/translation on a song known to provide them. Save a lyric preset, change a playful effect, restore it, and verify sources/audio did not move. Enable a lock-screen mode, lock the phone while music plays, change track and seek; confirm the title/progress remain correct and report whether artwork/lines update. Leave lock-screen mode off if LiveContainer does not deliver it reliably.

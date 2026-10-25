@@ -1,0 +1,69 @@
+// The redesign's design tokens: every redesigned screen takes its colors, type, spacing, radii and
+// motion from here, so the screens read as one app and nothing is tuned per screen by hand.
+//
+// Colors are white over the artwork field (ASMVitrineRField.h), whose color is kept dark enough that
+// ASMVitrineRPrimary and ASMVitrineRSecondary both pass WCAG AA on it. Type is the system font (SF Pro) sized by the
+// text style and capped, since Spotify's pages lay out for a fixed header height. Motion is springs,
+// critically damped for layout and a little bounce for press feedback; under Reduce Motion both
+// become instant without a host; ASMVitrineRAnimateLayout crossfades its host instead. Crossfades, responses
+// and exits stay, a fade not being motion.
+//
+// Threading: the constants and the colors are safe anywhere; fonts, ASMVitrineRAnimate and the
+// accessibility reads are main thread only.
+#import <UIKit/UIKit.h>
+
+extern const CGFloat ASMVitrineRSideMargin;      // 16, the page's side margin
+extern const CGFloat ASMVitrineRGrid;            // 8, every gap is a multiple of it
+extern const CGFloat ASMVitrineRRadiusArtwork;   // 12, the player's cover
+extern const CGFloat ASMVitrineRRadiusCard;      // 16, a content card
+extern const CGFloat ASMVitrineRRadiusCover;     // 8, a release cover in a list
+extern const CGFloat ASMVitrineRRadiusThumb;     // 6, a row's thumbnail up to 64pt
+extern const CGFloat ASMVitrineRGlassCircleSize; // 44, a round glass behind a top bar button
+extern const CGFloat ASMVitrineRActionHeight;    // 48, a button of the action row under a hero
+extern const CGFloat ASMVitrineRActionSpacing;   // 12, between the buttons of an action row
+extern const CGFloat ASMVitrineRGlassSpacing;    // 16, how near two glass shapes merge in one container
+extern const NSTimeInterval ASMVitrineRCrossfade;   // 0.35, a new image or field color fading in
+
+UIColor *ASMVitrineRPrimary(void);      // white
+UIColor *ASMVitrineRSecondary(void);    // white 65%, 80% with Increase Contrast
+UIColor *ASMVitrineRTertiary(void);     // white 40%, 60% with Increase Contrast
+UIColor *ASMVitrineRAccent(void);       // the accent color of Appearance, else Spotify's green
+UIColor *ASMVitrineRNeutralField(void); // #121212, the field before a color arrives; ASMVitrineRAmoled.x turns it black
+// Where glass cannot be (Reduce Transparency), the shape it would have had: white 16% over the field.
+UIColor *ASMVitrineRSolidGlassFill(void);
+// A content surface on the field (a card), a step lighter than the field it sits on.
+UIColor *ASMVitrineRElevated(UIColor *field);
+// The line between two rows of a list, drawn a pixel thick from the text's leading edge: white 12%, 20% with
+// Increase Contrast. Never a border around anything -- the redesign's surfaces are told apart by their fill.
+UIColor *ASMVitrineRHairline(void);
+
+// The system font at the size `style` has for the current content size category, but never larger
+// than it has at `largest`, in `weight`. Callers re-ask on traitCollectionDidChange:.
+UIFont *ASMVitrineRFont(UIFontTextStyle style, UIFontWeight weight, UIContentSizeCategory largest);
+// The same font with digits of one width, so a time or a count does not twitch as it changes.
+UIFont *ASMVitrineRMonospacedDigitsFont(UIFont *font);
+
+BOOL ASMVitrineRReduceMotion(void);
+BOOL ASMVitrineRReduceTransparency(void);
+BOOL ASMVitrineRIncreaseContrast(void);
+
+typedef NS_ENUM(NSInteger, ASMVitrineRMotion) {
+    ASMVitrineRMotionLayout,   // a spring with no overshoot, for anything moving or resizing
+    ASMVitrineRMotionPress,    // a spring with a little bounce, for press feedback
+    ASMVitrineRMotionFade,     // an ease in and out over ASMVitrineRCrossfade, kept under Reduce Motion
+    // A strong ease out over 0.2 s, for what comes back or opens at a touch: the eye is on it from the
+    // first frame. Kept under Reduce Motion like a fade, so only alpha, color and a glass effect go in it.
+    ASMVitrineRMotionRespond,
+    // An ease out over 0.15 s, for what goes once the finger has let it go (the hold's 2x badge): nothing is
+    // watched on its way out. Kept under Reduce Motion like a fade.
+    ASMVitrineRMotionExit,
+    // A spring with no overshoot over 0.34 s, for the tab bar minimizing and expanding with the now playing card:
+    // it happens many times a session, so it is quicker than a layout spring. At once under Reduce Motion.
+    ASMVitrineRMotionBar,
+};
+// Runs `animations` with the motion's timing, or at once under Reduce Motion (except a fade, a response or an exit), and
+// always calls `completion`. Only transform, alpha and color belong in it while a page scrolls.
+void ASMVitrineRAnimate(ASMVitrineRMotion motion, void (^animations)(void), void (^completion)(BOOL finished));
+
+// Layout with an explicit host: Reduce Motion crossfades the old and new layout in place.
+void ASMVitrineRAnimateLayout(UIView *host, void (^animations)(void), void (^completion)(BOOL finished));

@@ -1,0 +1,692 @@
+/* MARK: Postavke */
+
+patching = "Zakrpanje";
+lyrics = "Tekstovi";
+customization = "Prilagodba";
+
+common_issues_tip_title = "Imate poteškoća?";
+
+common_issues_tip_message = "Ako imate problema, poput nemogućnosti reprodukcije pjesama, provjerite";
+common_issues_tip_button = "Uobičajeni problemi";
+
+reset_data = "Poništi podatke";
+reset_data_description = "Očistite predmemorirane podatke i ponovno pokrenite aplikaciju.";
+
+checking_for_update = "Provjera ažuriranja...";
+update_available = "Ažuriranje dostupno";
+
+restart_is_required_description = "Potrebno je ponovno pokretanje aplikacije nakon promjene.";
+
+// Zakrpanje
+
+do_not_patch_premium = "Ne zakrpaj Premium";
+patching_description = "EeveeSpotify presreće zahtjeve za učitavanje korisničkih podataka, deserializira ih i modificira parametre u stvarnom vremenu.
+
+Ako imate aktivnu Premium pretplatu, možete uključiti opciju Ne zakrpaj Premium. Tweak neće zakrpati podatke niti ograničiti korištenje Premium značajki na strani poslužitelja.
+
+%@";
+
+overwrite_configuration = "Prepiši konfiguraciju";
+overwrite_configuration_description = "Zamijenite udaljenu konfiguraciju s preuzetom Premium konfiguracijom. Ova konfiguracija definira većinu parametara korisničkog sučelja/iskustva i može biti korisna, iako može izazvati probleme.";
+
+// Tekstovi
+
+do_not_replace_lyrics = "Ne zamjenjuj tekstove";
+lyrics_source = "Izvor tekstova";
+lyrics_source_description = "Možete odabrati željeni izvor tekstova.
+
+Genius: Nudi najbolju kvalitetu tekstova, pruža najviše pjesama i najbrže ažurira tekstove. Nije i nikada neće biti sinkroniziran s vremenom.
+
+LRCLIB: Najotvorenija usluga, nudi sinkronizirane tekstove. Međutim, nedostaju tekstovi za mnoge pjesme.
+
+Musixmatch: Usluga koju koristi Spotify. Pruža sinkronizirane tekstove za mnoge pjesme, ali potreban vam je korisnički token za korištenje ovog izvora.";
+lyrics_additional_info = "Ako EeveeSpotify ne može pronaći pjesmu ili obraditi tekstove, vidjet ćete poruku 'Nije moguće učitati tekstove za ovu pjesmu'. Tekstovi mogu biti pogrešni za neke pjesme kada se koristi Genius zbog načina na koji tweak pretražuje pjesme. U većini slučajeva sam to uspio riješiti.";
+petitlyrics_description = "PetitLyrics: Nudi mnoštvo sinkroniziranih japanskih i nekih međunarodnih tekstova.";
+
+musixmatch_user_token = "Musixmatch korisnički token";
+user_token_placeholder = "Unesite korisnički token ili zalijepite informacije za otklanjanje pogrešaka";
+
+enter_user_token = "Unesite korisnički token";
+enter_user_token_message = "Da biste koristili Musixmatch, morate preuzeti svoj korisnički token iz službene aplikacije. Preuzmite Musixmatch iz App Store-a, prijavite se, zatim idite na Postavke > Dobij pomoć > Kopiraj informacije za otklanjanje pogrešaka i zalijepite ih ovdje. Također možete izdvojiti token koristeći MITM.";
+
+genius_fallback = "Povrat na Genius";
+genius_fallback_description = "Učitaj tekstove s Geniusa ako postoji problem s %@.";
+
+show_fallback_reasons = "Prikaži razloge povrata";
+
+romanized_lyrics = "Romanizirani tekstovi";
+romanized_lyrics_description = "Prikaži romanizirane tekstove za japanski, korejski i kineski jezik.";
+
+musixmatch_language = "Jezik tekstova Musixmatch";
+musixmatch_language_description = "Možete unijeti dvopročitni kod jezika Musixmatch i vidjeti prevedene tekstove na Musixmatchu ako su dostupni.";
+
+// Korisničko sučelje
+
+lyrics_background_color_section = "Boja pozadine tekstova";
+lyrics_background_color_section_description = "Ako uključite Prikaz originalnih boja, tekstovi će se pojaviti u originalnim Spotify bojama za pjesme koje ih imaju.
+
+Možete postaviti statičnu boju ili faktor normalizacije temeljen na boji izvučenoj s naslovnice pjesme. Ovaj faktor određuje koliko se tamne boje posvjetljuju, a svijetle zatamnjuju. Općenito, vidjet ćete svjetlije boje s višim faktorom normalizacije.";
+
+display_original_colors = "Prikaži originalne boje";
+
+use_static_color = "Koristi statičnu boju";
+static_color = "Statična boja";
+
+color_normalization_factor = "Faktor normalizacije boje";
+dark_popups = "Tamni skočni prozori";
+
+/* MARK: Premium skočni prozori */
+
+have_premium_popup = "Izgleda da imate aktivnu Premium pretplatu, pa tweak neće zakrpati podatke niti ograničiti korištenje Premium značajki na strani poslužitelja. To možete upravljati u postavkama EeveeSpotify.";
+
+high_audio_quality_popup = "Vrlo visoka kvaliteta zvuka je na strani poslužitelja i nije dostupna s ovim tweakom.";
+playlist_downloading_popup = "Izvorno preuzimanje popisa za reprodukciju je na strani poslužitelja i nije dostupno s ovim tweakom. Ipak možete preuzeti epizode podcasta i lokalne popise za reprodukciju.";
+download_local_playlist = "Preuzmi lokalni popis za reprodukciju";
+
+/* MARK: Tekstovi */
+
+fallback_attribute = "Povrat";
+romanized_attribute = "Romanizirano";
+
+musixmatch_unauthorized_popup = "Tweak ne može učitati tekstove s Musixmatcha zbog greške u autorizaciji. Provjerite ili ažurirajte svoj Musixmatch token. Ako koristite iPad, token biste trebali preuzeti iz Musixmatch aplikacije za iPad.";
+musixmatch_restricted_popup = "Tweak ne može učitati tekstove s Musixmatcha jer su ograničeni. Vjerojatno je riječ o problemu s autorskim pravima zbog američke IP adrese, pa biste je trebali promijeniti ako ste u SAD-u ili koristiti VPN.";
+
+// Naslovi pogrešaka
+
+no_such_song = "Pjesma nije pronađena";
+musixmatch_restricted = "Ograničeno";
+invalid_musixmatch_token = "Neovlašteno";
+decoding_error = "Greška u dekodiranju";
+no_current_track = "Nema instance pjesme";
+unknown_error = "Nepoznata pogreška";
+
+// Naslovi instrumentalnih pjesama
+
+song_is_instrumental = "Ova pjesma je instrumentalna.";
+let_the_music_play = "Pustite glazbu da svira...";
+
+// Naslov omiljenih pjesama, treba odgovarati službenoj Spotify lokalizaciji
+
+liked_songs = "Omiljene pjesme";
+
+contributors = "Suradnici";
+
+request_anonymous_token = "Zatraži anonimni token";
+request_anonymous_token_description = "Dodirnite 'Zatraži anonimni token' za zahtjev tokena od Musixmatcha bez autorizacije.";
+
+lrclib_api = "Adresa poslužitelja";
+
+// Support the Project, links to Ko-fi in EeveeSettingsView
+support_the_project = "Podrži projekt";
+support_the_project_description = "Vaši doprinosi održavaju ovaj tweak ažurnim i pomažu Hysanu kupiti napitak hrabrosti za Elsu.";
+
+// Settings overhaul: flags, Liquid Glass, player, features, Spicy Lyrics, debug logging
+flags = "Zastavice";
+flags_search = "Pretraži zastavice";
+flags_changed_only = "Samo promijenjene";
+flags_auto = "Automatski";
+flags_on = "Uklj.";
+flags_off = "Isklj.";
+flags_count = "Zastavica: %d · Spotify %@";
+flags_empty = "Još nema skeniranih zastavica. Ponovno pokreni Spotify i otvori ga opet za nekoliko sekundi.";
+flags_restart = "Ponovno pokreni za primjenu";
+flags_reset = "Poništi sve promjene";
+flags_rescan = "Ponovno skeniraj zastavice";
+liquid_glass = "Liquid Glass";
+liquid_glass_footer = "Izvorno staklo iOS-a 26. Ponovno pokreni za primjenu.";
+liquid_glass_unsupported = "Potreban je iOS 26.";
+glass_surfaces = "Površine";
+glass_spotify = "Spotifyjeve staklene trake i izbornici";
+glass_tab_bar = "Traka kartica";
+glass_now_playing_bar = "Traka trenutne reprodukcije";
+tab_bar = "Traka kartica";
+tab_bar_hide_labels = "Sakrij oznake";
+tab_bar_empty = "Jednom otvori Spotify sa staklenom trakom kartica da se kartice ispišu.";
+new_player_design = "Novi dizajn playera";
+new_player_design_footer = "Spotifyjev neobjavljeni player u obliku lista, klizač i red čekanja. Ponovno pokreni za primjenu.";
+restart_now = "Pokreni ponovno sada";
+tab_bar_editor_hint = "Dodirni karticu da se otvara pri pokretanju. Zadrži i povuci za promjenu redoslijeda, povuci prema gore za skrivanje. Dodirni skrivenu karticu da je vratiš.";
+settings_group_listening = "Slušanje";
+settings_group_looks = "Izgled";
+settings_group_advanced = "Napredno";
+patching_subtitle = "Premium zakrpa";
+lyrics_subtitle = "Izvori i prikaz";
+sponsorblock_subtitle = "Preskoči segmente podcasta";
+customization_subtitle = "Boje tekstova i skočni prozori";
+appIcon_subtitle = "Ikona početnog zaslona";
+flags_subtitle = "Spotifyjeve udaljene zastavice";
+experiments_subtitle = "Nedovršene značajke";
+miscellaneous_subtitle = "Sve ostalo";
+glass_style = "Stil";
+spotify_flags = "Spotify zastavice";
+npb_subtitle = "Nijansa, omot, gumb uređaja, zastavice";
+npb_album_tint = "Nijansa prema boji albuma";
+npb_round_artwork = "Zaobljeni omot";
+npb_hide_connect = "Sakrij gumb uređaja";
+npb_flag_two_lines = "Dva retka podataka o pjesmi";
+npb_flag_add_button = "Gumb Spremi";
+npb_flag_queue_badge = "Značka reda čekanja";
+npb_flag_resize = "Zadrži i povuci za promjenu veličine";
+npb_flag_video = "Video u mini playeru";
+npb_flag_cover_morph = "Animacija od trake do omota";
+npb_flag_transitions = "Prijelazi mini playera";
+player = "Player";
+player_subtitle = "Pozadina, stakleni tekstovi, skrivanje dijelova, zastavice";
+player_backdrop = "Pozadina od omota";
+player_backdrop_subtitle = "Zamućen omot umjesto jednobojne pozadine";
+player_glass_lyrics = "Stakleni tekstovi";
+player_flag_canvas = "Canvas";
+player_flag_sheet = "Player u obliku lista";
+player_flag_header = "Redizajnirano zaglavlje";
+player_flag_slider = "Novi klizač napretka";
+player_flag_sticky = "Proširi prikvačeno zaglavlje dodirom";
+player_flag_queue_sheet = "Red čekanja kao list";
+player_flag_connect_sheet = "Connect kao list";
+player_flag_queue_flip = "Prijelaz okretanja reda čekanja";
+player_flag_play_next = "„Reproduciraj sljedeće” u izbornicima";
+glass_search = "Pretraživanje";
+player_hide_buttons = "Sakrij na playeru";
+player_hide_cards = "Sakrij kartice ispod playera";
+player_part_lyricsPreview = "Pregled teksta";
+player_part_shuffle = "Izmiješaj";
+player_part_repeat = "Ponovi";
+player_part_addTo = "Dodaj na playlistu";
+player_part_queue = "Red čekanja";
+player_part_share = "Podijeli";
+player_part_connect = "Poveži s uređajem";
+player_part_lyricsCard = "Tekst";
+player_part_aboutArtist = "O izvođaču";
+player_part_relatedVideos = "Povezani videozapisi";
+player_part_songDNA = "SongDNA";
+player_part_liveEvents = "Događaji uživo";
+player_part_exploreArtist = "Istraži izvođača";
+player_part_credits = "Zasluge";
+player_part_merch = "Merch";
+player_part_recommendations = "Preporuke";
+player_hide_parts = "Sakrij dijelove";
+player_hide_none = "Ništa nije skriveno";
+player_hide_count = "Skriveno: %d";
+player_part_allCards = "Sve kartice";
+player_part_releaseCountdown = "Odbrojavanje do izlaska";
+reset_page = "Poništi";
+reset_page_title = "Vratiti ovu stranicu na zadano?";
+glass_home = "Početna";
+rounded_artwork = "Zavojena poklopnica pleylist";
+glass_playlist = "Playliste i albumi";
+playlist_subtitle = "Omot, razdjelnici, dijelovi zaglavlja";
+playlist_footer = "Primjenjuje se kad otvoriš ili listaš playlistu.";
+playlist_full_cover = "Omot pune širine";
+playlist_dividers = "Razdjelnici pjesama";
+playlist_hide_find = "Sakrij traku za pronalaženje";
+appearance = "Izgled";
+appearance_subtitle = "Tema, staklo i raspored";
+theme = "Tema";
+theme_footer = "Ponovno pokreni za primjenu.";
+amoled = "AMOLED crna";
+accent_color = "Boja naglaska";
+home = "Početna";
+home_subtitle = "Sakrij odjeljke";
+home_hide = "Sakrij";
+home_pills = "Filtri";
+home_shortcuts = "Rešetka prečaca";
+home_promos = "Promocije";
+home_previews = "Pregledi";
+home_dj = "DJ";
+block_telemetry = "Blokiraj praćenje";
+block_telemetry_footer = "Zaustavlja Firebase, Facebook, Branch i druge analitičke SDK-ove. Reprodukcije i dalje stižu u Nedavno. Ponovno pokreni za primjenu.";
+troubleshooting = "Rješavanje problema";
+reset_section = "Poništi";
+reset_section_footer = "Obje opcije zatvaraju aplikaciju kad završe.";
+reset_data_subtitle = "Briše predmemoriju";
+full_reset_subtitle = "Briše sve i odjavljuje te";
+playlist_play = "Reproduciraj";
+playlist_pause = "Pauza";
+spotify_features = "Spotify značajke";
+spotify_features_subtitle = "Skriveni prekidači koje Spotify isporučuje";
+features_playback = "Reprodukcija";
+features_trim_silence = "Skrati tišinu";
+features_library = "Biblioteka";
+features_recents = "Nedavno";
+features_recents_sort = "Poredak nedavnog";
+features_sort_playlists = "Poredaj prema nedavno ažuriranim playlistama";
+features_sort_artists = "Poredaj prema nedavno ažuriranim izvođačima";
+features_denser_rows = "Gušći retci";
+features_library_settings = "Postavke biblioteke";
+features_library_pro = "Library Pro";
+features_shake_random = "Protresi za nasumično";
+features_lockscreen = "Zaključani zaslon";
+features_lock_like = "Gumb Sviđa mi se";
+features_lock_podcast_skip = "Preskakanje u podcastima";
+features_lock_chapters = "Preskakanje poglavlja";
+features_lock_animated = "Animirani omot";
+features_sleep_timer = "Mjerač vremena za spavanje";
+features_sleep_fade = "Postupno stišavanje";
+features_sleep_one_minute = "Opcija od 1 minute";
+features_home = "Početna";
+features_dj_button = "DJ gumb";
+features_dj_badge = "DJ beta značka";
+features_other = "Ostalo";
+features_local_files = "Lokalne datoteke u Dokumentima";
+features_hide_jam = "Sakrij Jam";
+features_hide_jam_footer = "Uklanja ulazne točke za Jam. Ponovno pokreni za primjenu.";
+block_rating_prompts = "Blokiraj zahtjeve za ocjenjivanje";
+block_rating_prompts_footer = "Bez skočnih prozora za recenziju App Storea. Ponovno pokreni za primjenu.";
+spicylyrics_key_invalid = "Spicy Lyrics API ključ odbijen";
+spicylyrics_api_key = "Spicy Lyrics API ključ";
+spicylyrics_api_key_description = "Ostavi prazno za korištenje ugrađenog ključa.";
+lyrics_made_by = "Izradio";
+lyrics_uploaded_by = "Učitao";
+player_gestures = "Geste";
+player_double_tap = "Dvostruki dodir na omot";
+player_double_tap_off = "Isklj.";
+player_double_tap_seek = "Premotaj 10 s";
+player_double_tap_skip = "Preskoči pjesmu";
+player_zones = "Zone";
+player_zones_two = "Lijevo · Desno";
+player_zones_three = "Lijevo · Sredina · Desno";
+player_haptics = "Haptika kontrola";
+player_haptics_subtitle = "Gumbi i premotavanje";
+tab_liked_songs = "Sviđa mi se";
+tab_downloads = "Preuzimanja";
+tab_podcasts = "Podcasti";
+tab_queue = "Red čekanja";
+tab_custom = "Prilagođene kartice";
+tab_custom_footer = "Otvori bilo koju Spotify stranicu iz trake kartica. Povuci za uklanjanje.";
+tab_add = "Dodaj karticu";
+tab_custom_uri = "Prilagođeni URI";
+tab_custom_title = "Naslov";
+tab_invalid_uri = "Nije Spotify poveznica ni URI";
+artist = "Izvođač";
+artist_subtitle = "Dijelovi zaglavlja";
+artist_verified = "Značka potvrde";
+artist_listeners = "Mjesečni slušatelji";
+artist_tabs = "Kartice Glazba / Događaji";
+playlist_part_description = "Opis";
+playlist_part_creator = "Redak autora";
+playlist_part_metadata = "Redak trajanja";
+playlist_part_pills = "Pilule kuriranja";
+home_gradient_footer = "Promjene se primjenjuju odmah.";
+home_gradient_strength = "Jačina";
+home_gradient_height = "Visina";
+home_gradient_subtle = "Suptilno";
+home_gradient_medium = "Srednje";
+home_gradient_bold = "Jako";
+home_gradient_short = "Nisko";
+home_gradient_tall = "Visoko";
+home_gradient_full = "Cijeli zaslon";
+home_gradient_fade = "Pretapanje";
+home_gradient_fade_top = "Rano";
+home_gradient_fade_mid = "Sredina";
+home_gradient_fade_low = "Kasno";
+home_gradient_pages = "Stranice";
+home_gradient_page_home = "Početna";
+home_gradient_page_library = "Biblioteka";
+home_gradient_page_search = "Pretraživanje";
+background_color = "Boja pozadine";
+state_on = "Uklj.";
+state_off = "Isklj.";
+appearance_pages = "Stranice";
+tab_bar_subtitle = "Redoslijed, kartica pri pokretanju, prilagođene kartice";
+lyrics_written_by = "Napisao/la:";
+lyrics_provided_by = "Tekst osigurava";
+karaoke_section = "Prilagođeni prikaz tekstova";
+karaoke_section_footer = "Obrnuti smjer pomiče retke odozdo prema gore, a aktivni redak je niže na zaslonu. Jačina zamućenja određuje koliko su neaktivni retci zamućeni.";
+karaoke_alignment = "Poravnanje teksta";
+karaoke_alignment_leading = "Lijevo";
+karaoke_alignment_center = "Sredina";
+karaoke_alignment_trailing = "Desno";
+karaoke_reversed_direction = "Obrnuti smjer";
+episode_header = "Epizoda %@";
+home_gradient_style = "Stil";
+home_gradient_style_gradient = "Prijelaz";
+home_gradient_style_solid = "Puna boja";
+spicylyrics_description = "SpicyLyrics pruža karaoke tekstove riječ po riječ. Prema zadanim postavkama koristi se ugrađeni ključ. Ako želiš koristiti vlastiti ključ, idi na Spicy ESR template, a zatim pritisni gumb „Sign in”. Nakon prijave prihvati ToS tvrtke Spicy i pritisni „Add ESR to my account”. Nakon dodavanja kopiraj generirani ključ, zalijepi ga u odjeljak tekstova Eevee, zatim se vrati na Spicy i klikni „I have stored it”. Zatim idi na stranicu aplikacija.";
+spicylyrics_template_link = "Spicy ESR template";
+karaoke_word_synced_button = "Prilagođeni prikaz tekstova";
+no_debug_log_found = "Dnevnik otklanjanja pogrešaka nije pronađen. Dnevnik se počinje bilježiti kad je uključena opcija bilježenja otklanjanja pogrešaka.";
+debug_section_footer = "Uključi bilježenje, zatim izvezi ili očisti dnevnik.";
+debug_logging = "Bilježenje otklanjanja pogrešaka";
+karaoke_enabled = "Prilagođeni prikaz tekstova";
+karaoke_blur_intensity = "Jačina zamućenja";
+
+/* MARK: Added to match en.lproj */
+
+glass_lyrics_view = "Prilagođeni prikaz tekstova";
+
+/* MARK: Not yet translated — English text shown until a translator updates these */
+
+experiments = "Experiments";
+sponsorblock = "SponsorBlock (BETA)";
+appIcon = "App Icon";
+true_shuffle = "True Shuffle";
+true_shuffle_dec = "Blocks Spotify's free-tier Smart Shuffle from mixing recommended tracks into your queue. Shuffle stays inside the playlist. ";
+hide_lyrics_on_error = "Hide on Error";
+hide_lyrics_on_error_description = "Remove the lyrics component if lyrics fail to load.";
+show_instagram_destination = "Show Instagram Destination";
+show_instagram_destination_description = "Always show the Instagram share destination. %@";
+livecontainer_sharing = "Share to LiveContainer";
+livecontainer_sharing_description = "Share to LiveContainer and copy the URL if the selected destination is not supported.";
+miscellaneous = "Miscellaneous";
+clean_share_links = "Clean Share Links";
+clean_share_links_description = "Removes tracking parameters from shared links.";
+could_not_share_popup = "Couldn’t share to the selected destination or LiveContainer. The URL has been copied.";
+developer_note = "Developer's Note";
+ad_free_music_listening = "Ad-free music listening";
+play_songs_in_any_order = "Play songs in any order";
+organize_listening_queue = "Organize listening queue";
+payment_notice = "EeveeSpotify applies patches to unlock certain Premium features. It's free.";
+debug_title = "Debug";
+export_debug_log = "Export Debug Log";
+clear_debug_log = "Clear Debug Log";
+debug_log_cleared = "Debug log cleared.";
+debug_log_cleared_ok = "OK";
+no_debug_log_found_ok = "OK";
+resetButtonTitle = "Full Reset";
+resetSubtitle = "Each is independent.";
+resetFooter = "Force re-login. Wipes Spotify keychain entries, sandbox dirs, and app-group containers. Other sideloaded apps untouched. App exits when done.";
+eevee_inline_subtitle_text = "Patching, lyrics, customization, and experiments";
+appIconTitle = "Choose Icon";
+appIconSubtitle = "iOS shows a confirmation the first time. The home screen may take a few seconds to refresh.";
+iconSelected = "Selected";
+iconTapToApply = "Tap to apply";
+prettifyIconNames = "Prettify Icon Names";
+prettifyIconNamesDescription = "Converts underscores, hyphens, and camelCase into spaces";
+categoryOneFooter = "Skips community-marked segments in podcast episodes.";
+enableSponsorblock = "Enable SponsorBlock";
+showColoredOverlay = "Show colored overlay on progress bar";
+showToast = "Show toast when skipping";
+skipToast = "Skip-toast action buttons (vote / undo / hide)";
+respectManualSeek = "Respect manual seek (don't re-skip)";
+categoriesHeader = "Categories";
+categoriesFooter = "Off · Show · Manual · Auto. Tap the color circle to change.";
+sponsor_category = "Sponsor";
+selfpromo_category = "Unpaid/Self Promotion";
+interaction_category = "Interaction Reminder";
+intro_category = "Intermission/Intro";
+outro_category = "Outro/Credits";
+preview_category = "Preview/Recap";
+hook_category = "Hook/Greetings";
+filler_category = "Tangent/Filler";
+exclusive_access_category = "Exclusive Access";
+action_disabled = "Off";
+action_show = "Show";
+action_manual = "Manual";
+action_auto = "Auto";
+draftsTitle = "Reporting & drafts";
+errorNoPodcats = "No podcast is currently playing.";
+markSegment = "Mark segment for current episode";
+advancedTitle = "Advanced";
+howToUseTitle = "How to use";
+creditsTitle = "Credits";
+creditsSubtitle = "Segment data from the SponsorBlock community (sponsor.ajay.app). Integration ported from Spot-SponsorBlock-Extension by Spot-SponsorBlock.";
+linkButtonTitle = "Spot-SponsorBlock-Extension on GitHub";
+sponsorblock_reports_title = "SponsorBlock Reports";
+sponsorblockIDTitle = "Your SponsorBlock ID";
+sponsorblockIDFooter = "Used to attribute your submissions and votes. Treat as a private password — don't share it.";
+user_id_copied = "User ID copied";
+copyButton = "Copy";
+regenerateButton = "Regenerate";
+draftsTitleSB = "Drafts";
+draftsEmpty = "No drafts. Long-press the podcast progress bar to start marking a segment.";
+draftsEpisodeLoc = "Episode %@";
+hidden_locally_header = "Hidden locally (%@)";
+hiddenFooter = "Segments here are never auto-skipped on this device. They still exist on the SponsorBlock server.";
+hiddenSegmentsEmpty = "No hidden segments.";
+unhideButton = "Unhide";
+popUpRegenerateTitle = "Regenerate user ID?";
+popUpRegenerateSubtitle = "Your existing submissions and votes will no longer be linked to you.";
+popUpClearAllButton = "Clear all";
+popUpClearAllTitle = "Clear all hidden segments?";
+popUpClearAllSubtitle = "They will skip again according to your category rules.";
+readyButton = "Ready";
+incompleteButton = "Incomplete";
+editSubmit = "Edit / Submit";
+discardButton = "Discard";
+skipBehaviourTitle = "Skipping behavior";
+autoSkipSubmissionsTitle = "Auto-skip my own submissions";
+logOnlyToggle = "Log only (don't actually seek)";
+serverHeader = "Server";
+urlText = "URL";
+tuningTitle = "Tuning";
+minSegmentDuration = "Min segment duration: %.1fs";
+toastDuration = "Toast duration: %.1fs";
+trackLogSubtitle = "Dumps podcast track metadata (URI, isPodcast, isVideo, etc.) to the debug log on each new track. Enable only when SponsorBlock isn't detecting a podcast you expect.";
+trackLogToggle = "Diagnostic track log";
+resetButtonTrackLog = "Reset…";
+resetTitle = "Reset what?";
+allResetSB = "Everything (all of the above)";
+regenerateIDSB = "Regenerate user ID";
+localSubmissionsSB = "My local submissions (%@)";
+votedRecordsSB = "Voted records (%@)";
+hiddenSegmentsSB = "Hidden segments (%@)";
+draftsCountSB = "Draft (%@)";
+settingsResetSB = "Settings (toggles + categories + colors)";
+playerGesturesTitle = "Gestures on the player";
+gesturesTitle1 = "Long-press the progress bar";
+gesturesDeps1 = "Mark a segment start. Long-press again at the end of the segment to set END and open the submission form.";
+gesturesTitle2 = "Tap a segment on the bar";
+gesturesDeps2 = "Vote, change category, or hide a segment on this device only.";
+submittingTitle = "Submitting";
+submittingSectionTitle1 = "Submission form";
+submittingSectionDeps1 = "Sliders + nudge buttons fine-tune start/end. Pick a category. Submit posts to sponsor.ajay.app.";
+submittingSectionTitle2 = "Your local submissions";
+submittingSectionDeps2 = "Auto-skipped on this device immediately. Voting unlocks once the server publishes them. The 'MINE' badge marks them.";
+skipToastTitle = "Skip toast";
+skipToastSectionTitle1 = "Undo";
+skipToastSectionDeps1 = "Seeks back to segment start. The segment plays through this once. Forward + back resets it so it re-skips.";
+skipToastSectionTitle2 = "Upvote / Downvote";
+skipToastSectionDeps2 = "👍 records your vote on the server. 👎 opens a menu to downvote, hide locally, or change category.";
+skipToastSectionTitle3 = "Full segment menu";
+skipToastSectionDeps3 = "Same options as tapping the segment on the progress bar.";
+managingSegmentsTitle = "Managing segments";
+managingSegmentsSectionTitle1 = "Manage segments…";
+managingSegmentsSectionDeps1 = "Long-press the bar → 'Manage segments' lists every segment for the current episode. Vote, hide, change category, or tap a row to jump the player.";
+managingSegmentsSectionTitle2 = "Reporting & drafts";
+managingSegmentsSectionDeps2 = "Settings → 'Reporting & drafts' holds your in-progress drafts (unfinished marks) and your hidden segments. Drafts persist across launches.";
+categoriesTitle = "Categories";
+categoriesSectionTitle1 = "Per-category actions";
+categoriesSectionDeps1 = "Off = ignore. Show = draw on the bar only. Manual = prompt before skipping. Auto = skip silently.";
+spicylyrics_api_key_placeholder = "Enter the Spicy client key";
+lyrics_source_restart_popup = "Restart Spotify so the new lyrics source is used everywhere. Songs you already played keep their old lyrics until then.";
+restart_later = "Later";
+
+// Custom lyrics renderer
+karaoke_renderer = "Lyrics view";
+karaoke_renderer_description = "Choose Eevee or Sweet Lyrics. Both use your selected lyrics source and local playback. Reopen the custom lyrics view after switching.";
+karaoke_follow_line = "Return to the current lyric";
+karaoke_seek_hint = "Seek to this lyric line";
+karaoke_close = "Close lyrics";
+sweet_simple_lyrics = "Simple lyrics (Sweet Lyrics)";
+
+// Custom lookup is independent of Spotify's native lyrics availability.
+karaoke_lookup_loading = "Searching your selected lyrics sources…";
+karaoke_lookup_missing = "No synced lyrics found in the selected sources.";
+karaoke_lookup_sources_hint = "Try another lyrics source in Eevee settings. A song can have vocals without synced lyrics in these catalogues.";
+karaoke_lookup_failed = "Could not load lyrics. Check your connection and lyrics source settings.";
+karaoke_lookup_no_track = "Play a song to look for lyrics.";
+karaoke_lookup_retry = "Try again";
+
+// a spotify mod controls (English fallback pending translations).
+asm_menu_subtitle = "lyrics, sound, animated covers and customization";
+asm_audio = "Speed, pitch & sound";
+asm_audio_subtitle = "Live audio controls and JamesDSP effects";
+asm_audio_speed_pitch = "Speed & pitch";
+asm_audio_session_hint = "Speed and pitch last until Spotify quits. Effects below are saved and apply while enabled. Your lyrics follow the changed playback rate.";
+asm_audio_speed = "Speed";
+asm_audio_pitch = "Pitch";
+asm_audio_wait = "Play a song on this device to activate the available audio controls. Spotify Connect playback on another device is unaffected.";
+asm_audio_reset_speed = "Reset speed & pitch";
+asm_audio_effects = "JamesDSP audio effects";
+asm_audio_enabled = "Enabled";
+asm_audio_gain = "Gain";
+asm_audio_limiter = "Limiter ceiling";
+asm_audio_release = "Limiter release";
+asm_audio_eq = "15-band equalizer";
+asm_audio_preset = "Preset";
+asm_audio_custom = "Custom";
+asm_audio_filter = "Filter";
+asm_audio_interpolation = "Interpolation";
+asm_audio_bass = "Dynamic bass boost";
+asm_audio_compressor = "Dynamic range compressor";
+asm_audio_response = "Response time";
+asm_audio_granularity = "Granularity";
+asm_audio_transform = "Transform";
+asm_audio_graphic = "Graphic equalizer";
+asm_audio_apply = "Apply";
+asm_audio_space = "Space & tone";
+asm_audio_reverb = "Reverb";
+asm_audio_widen = "Stereo widening";
+asm_audio_width = "Width";
+asm_audio_crossfeed = "Crossfeed";
+asm_audio_mode = "Mode";
+asm_audio_tube = "Analog modelling";
+asm_audio_drive = "Drive";
+asm_audio_file_effects = "File effects";
+asm_audio_convolver = "Convolver";
+asm_audio_library = "Choose / import file";
+asm_audio_file = "Selected file";
+asm_audio_none = "None";
+asm_audio_import = "Import a file";
+asm_audio_import_failed = "Could not import that file.";
+asm_audio_reset_effects = "Reset effect settings";
+asm_artwork_title = "Animated covers";
+asm_artwork_title_subtitle = "Video artwork, motion and cover styling";
+asm_artwork_enabled = "Enable custom covers";
+asm_artwork_hint = "Automatic video artwork searches Apple Music by album and artist. A matching album may have no video; the original cover stays visible. Album and artist names are sent to Apple when you enable automatic lookup.";
+asm_artwork_video = "Video artwork";
+asm_video_off = "Off";
+asm_video_automatic = "Automatic Apple Music + overrides";
+asm_video_custom = "My videos only";
+asm_artwork_wifi = "Use Wi-Fi for video artwork";
+asm_artwork_country = "Apple Music country code (e.g. us)";
+asm_artwork_current = "Current album";
+asm_artwork_override_hint = "An override belongs to this album only. Paste an Apple Music album page, an HTTPS MP4/MOV/HLS video, or import your own video. Video playback is muted.";
+asm_artwork_url = "Apple Music album / video URL";
+asm_artwork_save = "Save album override";
+asm_artwork_import = "Import a video for this album";
+asm_artwork_clear = "Remove album override";
+asm_artwork_play_song = "Play a song with album metadata to set an override.";
+asm_artwork_invalid_url = "Enter a valid HTTPS album or video URL.";
+asm_artwork_invalid_video = "Choose an MP4, MOV or M4V video.";
+asm_artwork_saved = "Saved for this album.";
+asm_artwork_motion = "Cover motion";
+asm_motion_off = "Off";
+asm_motion_spin = "Spin";
+asm_motion_breathe = "Breathe";
+asm_motion_float = "Float";
+asm_motion_tilt = "Tilt";
+asm_artwork_duration = "Motion duration";
+asm_artwork_radius = "Corner radius";
+asm_artwork_shadow = "Shadow strength";
+asm_artwork_paused_scale = "Paused cover size";
+asm_artwork_pause = "Pause motion with the music";
+asm_artwork_battery = "Still cover in low power mode";
+asm_artwork_system_hint = "Reduce Motion always stops video and motion effects. Videos pause when Spotify is in the background.";
+asm_resources = "Resources & credits";
+asm_resources_intro = "A personal Spotify patch built on EeveeSpotify, with native lyrics and adaptations from the projects below. Their original notices and licences are retained.";
+asm_resources_projects = "Projects & resources";
+asm_resources_licenses = "Licences & notices";
+asm_resources_missing = "This notice could not be loaded from the resource bundle.";
+asm_support_eevee = "Support EeveeSpotify’s developers";
+asm_support_spoti = "Support spoti.pw’s developer";
+asm_look_palette = "Accent palettes";
+asm_look_profiles = "My looks";
+asm_look_profiles_hint = "Three local save slots for appearance and cover settings. Restart Spotify after restoring a look. Lyrics and audio settings keep their own controls.";
+asm_look_slot = "Save slot";
+asm_look_save = "Save current look";
+asm_look_restore = "Restore this look";
+asm_look_saved = "Look saved.";
+asm_look_applied = "Applied. Restart Spotify to refresh all surfaces.";
+asm_look_legacy = "More lyric colours & popups";
+
+// a spotify mod controls (English fallback pending translations).
+asm_audio_transform_enabled = "Enable speed & pitch";
+asm_resources_catalogues = "Lyric catalogues";
+asm_whimsy_title = "Boykisser mode";
+asm_whimsy_on = "Boykisser mode on \u00b7 tap :3 to restore";
+asm_whimsy_off = "Off";
+asm_whimsy_hint = "Tap :3 for boykisser mode. Tap again to restore.";
+asm_audio_pending = "Choices are kept for this session. Controls waiting for a compatible local Spotify output will apply when it becomes available.";
+
+// Appearance recipes
+asm_style_presets = "Style presets";
+asm_style_personal = "My current look";
+asm_style_personal_detail = "Your appearance from before switching presets. Your edits are remembered when switching away.";
+asm_style_spotify = "Spotify";
+asm_style_spotify_detail = "Spotify's layout and colours, with this mod's visual overrides off.";
+asm_style_spotipw = "spoti.pw style";
+asm_style_spotipw_detail = "Album-tinted glass bars and backgrounds, with rounded covers. Inspired by spoti.pw; uses this mod's existing layout.";
+asm_style_vitrine = "Vitrine style";
+asm_style_vitrine_detail = "Lime accent, black backgrounds, neutral glass, larger playlist covers and fewer cards. Inspired by Vitrine; uses this mod's existing layout.";
+asm_style_hint = "Appearance only. Audio, lyrics and gestures stay shared. Edits are remembered for each style when you switch. Restart Spotify to apply the complete layout.";
+asm_style_requires_glass = "The spoti.pw and Vitrine glass styles require iOS 26 or later.";
+asm_style_reset = "Reset this style's appearance";
+
+// Simplified settings navigation
+asm_menu_root = "Mod settings";
+asm_menu_root_subtitle = "";
+asm_menu_lyrics = "Lyrics";
+asm_menu_lyrics_subtitle = "Viewer, sources and effects";
+asm_menu_sound = "Sound & playback";
+asm_menu_sound_subtitle = "Speed, pitch, EQ and podcast skips";
+asm_menu_look = "Look & feel";
+asm_menu_look_subtitle = "Presets, theme, covers and layout";
+asm_menu_advanced = "Advanced";
+asm_menu_advanced_subtitle = "Patching, flags and troubleshooting";
+asm_menu_about = "About & credits";
+asm_menu_about_subtitle = "Version, resources and licences";
+asm_menu_presets = "Style presets";
+asm_menu_presets_subtitle = "Spotify, spoti.pw, Vitrine and your own look";
+asm_menu_theme = "Theme & colours";
+asm_menu_theme_subtitle = "Accent, AMOLED, glass and app icon";
+asm_menu_covers = "Cover artwork";
+asm_menu_covers_subtitle = "Video and motion effects";
+asm_menu_layout = "Layout";
+asm_menu_layout_subtitle = "Player, bars and app pages";
+asm_menu_player = "Player";
+asm_menu_player_subtitle = "Controls, cards, gestures and background";
+asm_menu_now_playing_bar = "Now playing bar";
+asm_menu_now_playing_bar_subtitle = "Tint, artwork and Connect button";
+asm_menu_tabs = "Tab bar";
+asm_menu_tabs_subtitle = "Order, icons, labels and custom tabs";
+asm_menu_home = "Home";
+asm_menu_home_subtitle = "Sections and shortcuts";
+asm_menu_playlist = "Playlist";
+asm_menu_playlist_subtitle = "Cover, dividers and visible details";
+asm_menu_artist = "Artist";
+asm_menu_artist_subtitle = "Badges, listeners and tabs";
+asm_menu_background = "Background colour";
+asm_menu_background_subtitle = "Album-following gradients and page colours";
+asm_menu_glass = "Liquid glass";
+asm_menu_glass_subtitle = "Individual glass surfaces";
+asm_menu_app_icon = "App icon";
+asm_menu_app_icon_subtitle = "Choose an app icon";
+asm_menu_patching = "Patching";
+asm_menu_patching_subtitle = "Eevee patch mode and configuration";
+asm_menu_features = "Spotify features";
+asm_menu_features_subtitle = "Feature switches";
+asm_menu_flags = "Flags";
+asm_menu_flags_subtitle = "Complete Spotify feature catalogue";
+asm_menu_experiments = "Experiments";
+asm_menu_experiments_subtitle = "LiveContainer sharing and destinations";
+asm_menu_privacy = "Privacy & links";
+asm_menu_privacy_subtitle = "Telemetry, rating prompts and clean links";
+asm_menu_troubleshooting = "Troubleshooting";
+asm_menu_troubleshooting_subtitle = "Common issues, debug logging and export";
+asm_menu_reset = "Reset";
+asm_menu_reset_subtitle = "Clear cached data or reset Spotify";
+asm_menu_sponsorblock = "SponsorBlock";
+asm_menu_sponsorblock_subtitle = "Podcast segments and skipping";
+asm_menu_lyric_display = "Lyric display & motion";
+asm_menu_lyric_display_subtitle = "Text, blur, glow, backgrounds and timing";
+asm_menu_lyric_sources = "Lyric sources & blends";
+asm_menu_lyric_sources_subtitle = "Priority, word timing, uploaders and uncensoring";
+asm_menu_fun_lyrics = "Fun lyrics effects";
+asm_menu_fun_lyrics_subtitle = "Word spin, no gravity, float away and jelly";
+asm_menu_lyric_colours = "Lyric colours";
+asm_menu_lyric_colours_subtitle = "Original colours, static colour and normalization";
+
+"asm_menu_interface" = "Interface";
+"asm_menu_interface_subtitle" = "Spotify, spoti.pw or Vitrine";
+"asm_menu_viewers" = "Lyrics viewers";
+"asm_menu_viewers_subtitle" = "Choose a viewer and its own settings";

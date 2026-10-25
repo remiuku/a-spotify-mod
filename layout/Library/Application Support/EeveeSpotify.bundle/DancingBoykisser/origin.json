@@ -1,0 +1,75 @@
+[
+  {
+    "file": "dance-1.webp",
+    "url": "https://cdn.discordapp.com/emojis/1492634505259778068.webp?size=128&animated=true",
+    "bytes": 179934,
+    "sha256": "f0c48f0d0084ff22841817f4f1e2c54e592c6fbd1e167f9d98bc2130d6d6f2fd",
+    "size": [
+      108,
+      96
+    ],
+    "frames": 52,
+    "durationMs": 4160,
+    "delays": [
+      80
+    ],
+    "attribution": "User-supplied Discord URL; original artist not identified.",
+    "status": "bundled unchanged",
+    "defaultBeatsPerLoop": 8
+  },
+  {
+    "file": "dance-2.webp",
+    "url": "https://cdn.discordapp.com/emojis/1162066051694067823.webp?size=128&animated=true",
+    "bytes": 20630,
+    "sha256": "c9ce13f4db0602b6acd855dfeb762d5f308a7c69eee07597c9940ee633afada2",
+    "size": [
+      42,
+      44
+    ],
+    "frames": 25,
+    "durationMs": 500,
+    "delays": [
+      20
+    ],
+    "attribution": "User-supplied Discord URL; original artist not identified.",
+    "status": "bundled unchanged",
+    "defaultBeatsPerLoop": 1
+  },
+  {
+    "file": "dance-3.webp",
+    "url": "https://cdn.discordapp.com/emojis/1422304091656421427.webp?size=48&animated=true&name=explod&lossless=true",
+    "bytes": 11768,
+    "sha256": "ec9997b0018bbf566428d36df84a2d532fd921c27d236ce76eeece04604e079c",
+    "size": [
+      43,
+      48
+    ],
+    "frames": 12,
+    "durationMs": 240,
+    "delays": [
+      20
+    ],
+    "attribution": "User-supplied Discord URL; original artist not identified.",
+    "status": "bundled unchanged",
+    "defaultBeatsPerLoop": 1
+  },
+  {
+    "file": "bounce.gif",
+    "url": "https://cdn.discordapp.com/attachments/1210634078890496153/1439225439951392919/bounce.gif",
+    "downloadedViaSignedUrl": true,
+    "bytes": 11095,
+    "sha256": "feb12f6a60ce75975665b1a5bacb481dd2581a993bf0a0cd915b00901becef3a",
+    "size": [
+      48,
+      364
+    ],
+    "frames": 25,
+    "durationMs": 500,
+    "delays": [
+      20
+    ],
+    "defaultBeatsPerLoop": 1,
+    "attribution": "User-supplied Discord URL; original artist not identified.",
+    "status": "bundled unchanged"
+  }
+]

@@ -1,0 +1,725 @@
+// Adapted from sppqq/sweet-lyrics-ios, revision 90c10d785d3187258b8cb6e3e63b790ff4900da5.
+// Modified for EeveeSpotify; AGPL-3.0. See THIRD_PARTY_SWEET_LYRICS.md.
+import SwiftUI
+
+/// Typography and spacing shared by all lines, from Spicy Lyrics' Mixed.css. `cqw` is 1% of the
+/// lyrics container's width, the unit the stylesheet sizes spacing in.
+struct SweetLyricsTypography: Equatable {
+    var fontSize: CGFloat
+    var cqw: CGFloat = 3.9
+    /// The song has duet (opposite-aligned) lines.
+    var hasDuets = false
+    /// Simple Lyrics Mode: softer, wider fill (`--gradient-offset: 30%`, alpha 1 → 0.3).
+    var simple = false
+    var centered = false
+    var font = SweetLyricsFontChoice(stored: SweetLyricsFont.standard.rawValue)
+    /// User multipliers (1 = the original look).
+    var blurScale: CGFloat = 1
+    var glowScale: Double = 1
+    var fillSoftness: Double = 1
+    var wordTint: Color = .white
+    var glowTint: Color = .white
+    /// 0.5 darker … 1.5 brighter lines that are not being sung.
+    var inactiveBrightness: Double = 1
+    var lineSpacingScale: CGFloat = 1
+    var translationScale: CGFloat = 1
+    var translationBrightness: Double = 1
+    var weight: Font.Weight = .bold
+    var playful = MildPlayfulContext()
+    var lineID = 0
+    var lineOpacity = 1.0
+
+    var leadFont: Font { font.font(size: fontSize, weight: weight) }
+    /// Width of the lit → unlit fade, as a fraction of a glyph.
+    var fillFade: Double { max(0.001, (simple ? 0.5 : 0.2) * fillSoftness) }
+    var leadAlpha: SweetGradientAlpha { simple ? SweetGradientAlpha(lit: 1, unlit: 0.3) : .lead }
+    /// `.line.bg-line { --font-size: calc(var(--DefaultLyricsSize) * 0.75) }`
+    var backgroundFontSize: CGFloat { fontSize * 0.75 }
+    var backgroundFont: Font { font.font(size: backgroundFontSize, weight: weight) }
+    /// `.word::after { margin-right: 0.32ch }` (a "0" in the bold face is ~0.6em wide).
+    func wordGap(_ size: CGFloat) -> CGFloat { size * 0.6 * 0.32 }
+    /// `.line { margin: 1cqw 0 }`, collapsing between neighbours.
+    var lineSpacing: CGFloat { cqw * lineSpacingScale }
+    /// Static lyrics: `--DefaultLyricsSize: 5cqw` against the synced 7cqw, weight 500.
+    var staticFont: Font { font.font(size: fontSize * 5 / 7, weight: .medium) }
+    /// `.line { padding-right: 5cqw }`, or the 15cqw duet inset on the side a line leans away from.
+    func insets(opposite: Bool) -> EdgeInsets {
+        if centered { return EdgeInsets(top: 0, leading: cqw * 5, bottom: 0, trailing: cqw * 5) }
+        if hasDuets {
+            return opposite ? EdgeInsets(top: 0, leading: cqw * 15, bottom: 0, trailing: 0)
+                            : EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: cqw * 15)
+        }
+        return EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: cqw * 5)
+    }
+
+    static func == (lhs: SweetLyricsTypography, rhs: SweetLyricsTypography) -> Bool {
+        lhs.fontSize == rhs.fontSize && lhs.cqw == rhs.cqw && lhs.hasDuets == rhs.hasDuets
+            && lhs.simple == rhs.simple && lhs.centered == rhs.centered && lhs.font == rhs.font
+            && lhs.blurScale == rhs.blurScale && lhs.glowScale == rhs.glowScale
+            && lhs.inactiveBrightness == rhs.inactiveBrightness && lhs.lineSpacingScale == rhs.lineSpacingScale
+            && lhs.translationScale == rhs.translationScale
+            && lhs.translationBrightness == rhs.translationBrightness && lhs.weight == rhs.weight
+            && lhs.fillSoftness == rhs.fillSoftness && lhs.wordTint == rhs.wordTint && lhs.glowTint == rhs.glowTint
+            && lhs.playful == rhs.playful && lhs.lineID == rhs.lineID && lhs.lineOpacity == rhs.lineOpacity
+    }
+
+    /// Scales how far a line's opacity sits below fully lit, so the active line stays at 1
+    /// and the change animates as smoothly as the opacity itself.
+    func opacity(_ value: Double) -> Double {
+        Sweetclamp(1 - (1 - value) * (2 - inactiveBrightness), 0.05, 1)
+    }
+}
+
+/// How bright the lit / unlit parts of the fill gradient are (Mixed.css `--gradient-alpha*`).
+struct SweetGradientAlpha: Equatable {
+    var lit: Double
+    var unlit: Double
+
+    static let lead = SweetGradientAlpha(lit: 0.85, unlit: 0.5)
+    static let background = SweetGradientAlpha(lit: 0.6, unlit: 0.3)
+}
+
+/// The glow shadows of Spicy Lyrics, per element kind (`--text-shadow-*` in SweetLyricsAnimator.ts).
+enum SweetGlowKind {
+    case syllable, letter, dot, line
+
+    /// CSS blur radius is ~2σ; SwiftUI's shadow radius is closer to σ.
+    func radius(_ glow: Double) -> CGFloat {
+        switch self {
+        case .syllable: return (4 + 2 * glow) / 2
+        case .letter: return (4 + 12 * glow) / 2
+        case .dot: return (4 + 6 * glow) / 2
+        case .line: return (4 + 8 * glow) / 2
+        }
+    }
+
+    func opacity(_ glow: Double) -> Double {
+        let value: Double
+        switch self {
+        case .syllable: value = glow * 0.35
+        case .letter: value = glow * 1.85
+        case .dot: value = glow * 0.9
+        case .line: value = glow * 0.5
+        }
+        return Sweetclamp(value, 0, 1)
+    }
+}
+
+extension View {
+    /// Left-to-right fill: fully lit before `position`, unlit from `position + fade` on.
+    func SweetlyricFill(_ position: Double, alpha: SweetGradientAlpha, fade: Double = 0.2, tint: Color = .white) -> some View {
+        foregroundStyle(
+            LinearGradient(
+                colors: [tint.opacity(alpha.lit), tint.opacity(alpha.unlit)],
+                startPoint: UnitPoint(x: position, y: 0.5),
+                endPoint: UnitPoint(x: position + fade, y: 0.5)
+            )
+        )
+    }
+
+    @ViewBuilder
+    func SweetlyricGlow(_ glow: Double, kind: SweetGlowKind, tint: Color = .white) -> some View {
+        let opacity = kind.opacity(glow)
+        if opacity > 0.004 {
+            shadow(color: tint.opacity(opacity), radius: kind.radius(glow))
+        } else {
+            self
+        }
+    }
+}
+
+// MARK: - Line
+
+struct SweetLyricLineView: View, Equatable {
+    let line: SweetPreparedLine
+    let visual: SweetLineVisual
+    let typography: SweetLyricsTypography
+    /// On-device translation shown under the line.
+    var translation: String? = nil
+    var showOriginal = true
+
+    static func == (lhs: SweetLyricLineView, rhs: SweetLyricLineView) -> Bool {
+        lhs.line == rhs.line && lhs.visual == rhs.visual && lhs.typography == rhs.typography
+            && lhs.translation == rhs.translation && lhs.showOriginal == rhs.showOriginal
+    }
+
+    private var horizontalAlignment: HorizontalAlignment {
+        typography.centered ? .center : (line.oppositeAligned ? .trailing : .leading)
+    }
+    private var frameAlignment: Alignment { typography.centered ? .center : (line.oppositeAligned ? .trailing : .leading) }
+    private var textAlignment: TextAlignment { typography.centered ? .center : (line.oppositeAligned ? .trailing : .leading) }
+
+    var body: some View {
+        VStack(alignment: horizontalAlignment, spacing: typography.fontSize * 0.1) {
+            if showOriginal { content }
+            if let translation, !translation.isEmpty {
+                ASMLyricText(translation)
+                    // A backing vocal's translation is as much smaller as the vocal itself.
+                    .font(.system(size: (line.isBackground ? typography.backgroundFontSize : typography.fontSize)
+                                  * (showOriginal ? 0.55 : 1) * typography.translationScale, weight: showOriginal ? .semibold : .bold))
+                    .foregroundStyle(.white.opacity(min(1, (showOriginal ? (line.isBackground ? 0.45 : 0.6) : 1) * typography.translationBrightness)))
+                    .multilineTextAlignment(textAlignment)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .transition(.opacity)
+            }
+        }
+            .padding(typography.insets(opposite: line.oppositeAligned))
+            // `.bg-line { margin: -1cqw 0 1cqw }`: tucked right under the line above.
+            .padding(.top, line.isBackground ? -typography.lineSpacing : 0)
+            .frame(maxWidth: .infinity, alignment: frameAlignment)
+            .opacity(typography.opacity(visual.opacity))
+            .blur(radius: visual.blur * typography.blurScale > 0.05 ? visual.blur * typography.blurScale / 2 : 0)
+    }
+
+    @ViewBuilder
+    private var content: some View {
+        switch line.kind {
+        case .syllable(let lead, let background):
+            // `.bg-line { margin: -1cqw 0 1cqw }` cancels the gap under the lead line.
+            VStack(alignment: horizontalAlignment, spacing: 0) {
+                if !lead.isEmpty {
+                    SweetWordFlowView(words: lead, visuals: visual.lead,
+                                 fontSize: line.isBackground ? typography.backgroundFontSize : typography.fontSize,
+                                 font: line.isBackground ? typography.backgroundFont : typography.leadFont,
+                                 alpha: line.isBackground ? .background : typography.leadAlpha, typography: typography,
+                                 alignment: horizontalAlignment)
+                }
+                if !background.isEmpty {
+                    SweetWordFlowView(words: background, visuals: visual.background, fontSize: typography.backgroundFontSize,
+                                 font: typography.backgroundFont, alpha: .background, typography: typography,
+                                 alignment: horizontalAlignment)
+                }
+            }
+            // VoiceOver reads the line, not syllable by syllable.
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel(line.plainText)
+
+        case .line(let text):
+            if typography.playful.configuration.zeroGravity > 0 {
+                SweetWordFlowView(words: [.init(syllables: [.init(text: text, start: line.start, end: line.end, letters: nil)])],
+                                  visuals: [[.init(glyph: visual.line)]], fontSize: typography.fontSize, font: typography.leadFont,
+                                  alpha: typography.leadAlpha, typography: typography, alignment: horizontalAlignment)
+            } else {
+            ASMLyricText(text)
+                .font(typography.leadFont)
+                .multilineTextAlignment(textAlignment)
+                .SweetlyricFill(visual.line.gradient, alpha: typography.leadAlpha, fade: typography.fillFade, tint: typography.wordTint)
+                .SweetlyricGlow(visual.state == .active ? visual.line.glow * typography.glowScale : 0, kind: .line, tint: typography.glowTint)
+                // Active line-synced lines grow to 1.05 from their aligned edge.
+                .scaleEffect(visual.scale, anchor: typography.centered ? .center : (line.oppositeAligned ? .trailing : .leading))
+                .modifier(MildTimedFragment(start: line.start, end: line.end, context: typography.playful,
+                                            fontHeight: typography.font.uiFont(size: typography.fontSize).lineHeight))
+            }
+
+        case .static(let text):
+            ASMLyricText(text)
+                .font(typography.staticFont)
+                .multilineTextAlignment(textAlignment)
+                .foregroundStyle(.white)
+
+        case .interlude:
+            SweetInterludeDotsView(dots: visual.dots, presence: visual.presence, groupScale: visual.dotGroupScale,
+                              typography: typography, start: line.start, end: line.end)
+        }
+    }
+}
+
+// MARK: - Words
+
+/// Lays the words of a syllable-synced line out like text, never breaking inside a word.
+private struct SweetWordFlowView: View {
+    let words: [SweetPreparedWord]
+    let visuals: [[SweetSyllableVisual]]
+    let fontSize: CGFloat
+    let font: Font
+    let alpha: SweetGradientAlpha
+    let typography: SweetLyricsTypography
+    let alignment: HorizontalAlignment
+
+    /// Syllables in reading order, each knowing whether it is glued to the next (same word).
+    /// Letter-animated syllables are laid out letter by letter (still glued), so a very long
+    /// word can break between letters instead of running off the screen.
+    private var items: [FlowItem] {
+        words.indices.flatMap { w -> [FlowItem] in
+            let syllables = words[w].syllables
+            return syllables.indices.flatMap { s -> [FlowItem] in
+                let lastSyllable = s == syllables.count - 1
+                guard let letters = syllables[s].letters, !letters.isEmpty else {
+                    return [FlowItem(id: w * 1_000_000 + s * 1_000, w: w, s: s, letter: nil, gluedToNext: !lastSyllable)]
+                }
+                return letters.indices.map { l in
+                    FlowItem(id: w * 1_000_000 + s * 1_000 + l + 1, w: w, s: s, letter: l,
+                             gluedToNext: !(lastSyllable && l == letters.count - 1))
+                }
+            }
+        }
+    }
+
+    private struct FlowItem: Identifiable {
+        let id: Int
+        let w: Int
+        let s: Int
+        /// Index of the letter in an emphasized syllable, nil for a whole syllable.
+        let letter: Int?
+        let gluedToNext: Bool
+    }
+
+    private func visual(_ item: FlowItem) -> SweetSyllableVisual {
+        visuals.indices.contains(item.w) && visuals[item.w].indices.contains(item.s)
+            ? visuals[item.w][item.s] : SweetSyllableVisual()
+    }
+
+    /// A letter rides its word (the letter group's container in the extension), which has its
+    /// own scale and lift.
+    private func letterVisual(_ item: FlowItem, _ l: Int) -> SweetGlyphVisual {
+        let syllable = visual(item)
+        var letter = syllable.letters.indices.contains(l) ? syllable.letters[l] : SweetGlyphVisual()
+        letter.scale *= syllable.glyph.scale
+        letter.yOffset += syllable.glyph.yOffset
+        return letter
+    }
+
+    var body: some View {
+        if typography.playful.configuration.enabled {
+            SweetPlayfulWordFlow(words: words, visuals: visuals, fontSize: fontSize, font: font, alpha: alpha,
+                                 typography: typography, alignment: alignment)
+        } else {
+        SweetFlowLayout(alignment: alignment, spacing: typography.wordGap(fontSize), rowSpacing: 0) {
+            ForEach(items) { item in
+                Group {
+                    if let l = item.letter, let letters = words[item.w].syllables[item.s].letters {
+                        SweetGlyphView(text: letters[l].text, visual: letterVisual(item, l),
+                                  fontSize: fontSize, font: font, alpha: alpha, fade: typography.fillFade,
+                                  glowKind: .letter, glowScale: typography.glowScale, tint: typography.wordTint, glowTint: typography.glowTint)
+                    } else {
+                        SweetGlyphView(text: words[item.w].syllables[item.s].text, visual: visual(item).glyph,
+                                  fontSize: fontSize, font: font, alpha: alpha, fade: typography.fillFade,
+                                  glowKind: .syllable, glowScale: typography.glowScale, tint: typography.wordTint, glowTint: typography.glowTint)
+                    }
+                }
+                .layoutValue(key: SweetGluedToNext.self, value: item.gluedToNext)
+                // A letter grows with its syllable; its own pop on top may overlap, as in the extension.
+                .layoutValue(key: SweetGlyphGrowth.self, value: CGFloat(visual(item).glyph.scale))
+            }
+        }
+        }
+    }
+}
+
+private struct SweetGlyphView: View {
+    let text: String
+    let visual: SweetGlyphVisual
+    let fontSize: CGFloat
+    let font: Font
+    let alpha: SweetGradientAlpha
+    let fade: Double
+    let glowKind: SweetGlowKind
+    let glowScale: Double
+    let tint: Color
+    let glowTint: Color
+
+    var body: some View {
+        ASMLyricText(text)
+            .font(font)
+            .fixedSize(horizontal: false, vertical: true)
+            .SweetlyricFill(visual.gradient, alpha: alpha, fade: fade, tint: tint)
+            .SweetlyricGlow(visual.glow * glowScale, kind: glowKind, tint: glowTint)
+            .scaleEffect(visual.scale)
+            .offset(y: visual.yOffset * fontSize)
+    }
+}
+
+// MARK: - Mild's timed fragments and loose words
+
+private struct MildTimedFragment: ViewModifier {
+    let start: Double
+    let end: Double
+    let context: MildPlayfulContext
+    let fontHeight: Double
+    var allowSpin = true
+    func body(content: Content) -> some View {
+        let c = context.configuration
+        let flight = MildPlayfulEffects.flight(start: start, position: context.position,
+                                              speed: c.zeroGravity > 0 ? 0 : c.floatAway, fontHeight: fontHeight)
+        return content
+            .scaleEffect(flight.scale)
+            .offset(y: -flight.lift)
+            .opacity(flight.opacity)
+            .rotationEffect(.degrees(allowSpin && c.zeroGravity == 0 ? MildPlayfulEffects.spin(start: start, end: end,
+                                                                                             position: context.position, turns: c.spin) : 0))
+    }
+}
+
+private struct SweetPlayfulWordFlow: View {
+    let words: [SweetPreparedWord]
+    let visuals: [[SweetSyllableVisual]]
+    let fontSize: CGFloat
+    let font: Font
+    let alpha: SweetGradientAlpha
+    let typography: SweetLyricsTypography
+    let alignment: HorizontalAlignment
+    var body: some View {
+        let context = typography.playful
+        let active = words.firstIndex { word in
+            let span = MildPlayfulEffects.span(word)
+            return span.start <= context.position && context.position < span.end
+        }
+        SweetFlowLayout(alignment: alignment, spacing: typography.wordGap(fontSize), rowSpacing: 0) {
+            ForEach(words.indices, id: \.self) { i in
+                let word = words[i], span = MildPlayfulEffects.span(word)
+                let values = visuals.indices.contains(i) ? visuals[i] : []
+                let released = context.configuration.zeroGravity > 0
+                    && MildWordDrift.hasFinished(start: span.start, end: span.end, position: context.position)
+                let key = "\(typography.lineID):\(i):\(span.start):\(word.syllables.map(\.text).joined())"
+                SweetEffectWordContents(word: word, visuals: values, fontSize: fontSize, font: font,
+                                        alpha: alpha, typography: typography, lastWord: i == words.count - 1,
+                                        spinning: active == i && context.configuration.spin > 0)
+                    .rotationEffect(.degrees(active == i && context.configuration.zeroGravity == 0
+                                              ? MildPlayfulEffects.spin(start: span.start, end: span.end,
+                                                                       position: context.position, turns: context.configuration.spin) : 0))
+                    .opacity(released ? 0 : 1)
+                    .anchorPreference(key: MildLooseWordAnchors.self, value: .bounds) { anchor in
+                        guard released, context.position - span.end <= 0.6 else { return [:] }
+                        return [key: MildLooseWordAnchor(bounds: anchor, word: word, visuals: values, fontSize: fontSize,
+                                                         font: font, alpha: alpha, typography: typography)]
+                    }
+            }
+        }
+    }
+}
+
+private struct SweetEffectWordContents: View {
+    let word: SweetPreparedWord
+    let visuals: [SweetSyllableVisual]
+    let fontSize: CGFloat
+    let font: Font
+    let alpha: SweetGradientAlpha
+    let typography: SweetLyricsTypography
+    var lastWord = false
+    var spinning = false
+    var loose = false
+
+    private func base(_ s: Int) -> SweetSyllableVisual { visuals.indices.contains(s) ? visuals[s] : SweetSyllableVisual() }
+    private func glyph(_ s: Int, _ l: Int?) -> SweetGlyphVisual {
+        let v = base(s)
+        var value = l.flatMap { v.letters.indices.contains($0) ? v.letters[$0] : nil } ?? v.glyph
+        if loose { value.scale = 1; value.yOffset = 0; value.glow = 0; return value }
+        if l != nil { value.scale *= v.glyph.scale; value.yOffset += v.glyph.yOffset }
+        if let l, !spinning, typography.playful.configuration.jelly > 0 {
+            let flatIndex = word.syllables.prefix(s).reduce(0) { $0 + ($1.letters?.count ?? 0) } + l
+            let jelly = MildPlayfulEffects.jelly(word: word, letterIndex: flatIndex, position: typography.playful.position,
+                                                 lastWord: lastWord, configuration: typography.playful.configuration,
+                                                 fontHeight: typography.font.uiFont(size: fontSize).lineHeight)
+            value.scale = jelly.scale
+            value.yOffset = v.glyph.yOffset - jelly.lift / fontSize
+        }
+        return value
+    }
+    var body: some View {
+        SweetFlowLayout(alignment: .leading, spacing: 0, rowSpacing: 0) {
+            ForEach(word.syllables.indices, id: \.self) { s in
+                let syllable = word.syllables[s]
+                SweetFlowLayout(alignment: .leading, spacing: 0, rowSpacing: 0) {
+                    if let letters = syllable.letters, !letters.isEmpty {
+                        ForEach(letters.indices, id: \.self) { l in
+                            let g = glyph(s, l)
+                            SweetGlyphView(text: letters[l].text, visual: g, fontSize: fontSize, font: font, alpha: alpha,
+                                           fade: typography.fillFade, glowKind: .letter, glowScale: typography.glowScale,
+                                           tint: typography.wordTint, glowTint: typography.glowTint)
+                                .layoutValue(key: SweetGluedToNext.self, value: l < letters.count - 1)
+                                .layoutValue(key: SweetGlyphGrowth.self, value: CGFloat(g.scale))
+                        }
+                    } else {
+                        SweetGlyphView(text: syllable.text, visual: glyph(s, nil), fontSize: fontSize, font: font, alpha: alpha,
+                                       fade: typography.fillFade, glowKind: .syllable, glowScale: typography.glowScale,
+                                       tint: typography.wordTint, glowTint: typography.glowTint)
+                    }
+                }
+                .modifier(MildTimedFragment(start: syllable.start, end: syllable.end,
+                                            context: loose ? MildPlayfulContext() : typography.playful,
+                                            fontHeight: typography.font.uiFont(size: fontSize).lineHeight, allowSpin: false))
+                .layoutValue(key: SweetGluedToNext.self, value: s < word.syllables.count - 1)
+            }
+        }
+    }
+}
+
+struct MildLooseWordAnchor {
+    let bounds: Anchor<CGRect>
+    let word: SweetPreparedWord
+    let visuals: [SweetSyllableVisual]
+    let fontSize: CGFloat
+    let font: Font
+    let alpha: SweetGradientAlpha
+    let typography: SweetLyricsTypography
+}
+struct MildLooseWordAnchors: PreferenceKey {
+    static var defaultValue: [String: MildLooseWordAnchor] = [:]
+    static func reduce(value: inout [String: MildLooseWordAnchor], nextValue: () -> [String: MildLooseWordAnchor]) {
+        value.merge(nextValue()) { _, new in new }
+    }
+}
+
+/// Retains the rendering payload as well as physics. SwiftUI may unmount a lazy
+/// lyric row at any time; that must not remove a body already in the viewport.
+final class MildLooseWordScene {
+    private let engine = MildWordDrift()
+    private var content: [String: MildLooseWordAnchor] = [:]
+    private var revision = 0
+    struct Draw: Identifiable {
+        let id: String
+        let item: MildLooseWordAnchor
+        let size: CGSize
+        let state: MildWordDrift.State
+        let opacity: Double
+    }
+    func reset() { engine.reset(); content.removeAll(); revision = engine.revision }
+    func update(anchors: [String: (item: MildLooseWordAnchor, frame: CGRect)], viewport: CGSize,
+                now: Double, position: Double, isPlaying: Bool, speed: Double) -> [Draw] {
+        let candidates = anchors.map { key, value in
+            MildWordDrift.Candidate(key: key, frame: value.frame, end: MildPlayfulEffects.span(value.item.word).end)
+        }
+        let bodies = engine.update(candidates: candidates, viewport: viewport, now: now, position: position,
+                                   isPlaying: isPlaying, speed: speed)
+        if revision != engine.revision { content.removeAll(); revision = engine.revision }
+        let keys = Set(bodies.map(\.key))
+        content = content.filter { keys.contains($0.key) }
+        return bodies.compactMap { body in
+            // Capture once: subsequent scrolling/line dimming must not alter
+            // an independent floating copy's font, colour, opacity or bounds.
+            if content[body.key] == nil { content[body.key] = anchors[body.key]?.item }
+            guard let item = content[body.key] else { return nil }
+            return Draw(id: body.key, item: item, size: body.size, state: body.state, opacity: body.opacity)
+        }
+    }
+}
+
+struct MildLooseWordsLayer: View {
+    let anchors: [String: MildLooseWordAnchor]
+    let scene: MildLooseWordScene
+    let speed: Double
+    let interval: Double
+    var body: some View {
+        GeometryReader { geometry in
+            TimelineView(.periodic(from: .now, by: interval)) { _ in
+                let playback = KaraokePlaybackTracker.shared.playbackSnapshot()
+                let positioned = anchors.mapValues { (item: $0, frame: geometry[$0.bounds]) }
+                let draws = scene.update(anchors: positioned, viewport: geometry.size, now: SweetMediaClock.now(),
+                                         position: Double(KaraokePlaybackTracker.shared.currentLyricPositionMs()) / 1000, isPlaying: playback.isPlaying, speed: speed)
+                ZStack(alignment: .topLeading) {
+                    ForEach(draws) { draw in
+                        SweetEffectWordContents(word: draw.item.word, visuals: draw.item.visuals,
+                                                fontSize: draw.item.fontSize, font: draw.item.font, alpha: draw.item.alpha,
+                                                typography: draw.item.typography, loose: true)
+                            .frame(width: draw.size.width, height: draw.size.height)
+                            .rotationEffect(.degrees(draw.state.angle))
+                            .opacity(draw.item.typography.lineOpacity * draw.opacity)
+                            .position(x: draw.state.x + draw.size.width / 2, y: draw.state.y + draw.size.height / 2)
+                    }
+                }.frame(width: geometry.size.width, height: geometry.size.height).clipped()
+            }
+        }
+    }
+}
+
+// MARK: - Interlude
+
+/// The "•••" row of an instrumental gap (`.musical-line .dotGroup`): three dots at 1.3× the lyric
+/// size, packed tight, each with its own springs; the whole group pops in and out.
+///
+/// The extension draws "•" in its own font, whose bullet is 0.348 em across on a 0.485 em advance
+/// (SF Pro's is only 0.246 em), so the dots are drawn as circles of exactly that size.
+private struct SweetInterludeDotsView: View {
+    let dots: [SweetGlyphVisual]
+    let presence: Double
+    let groupScale: Double
+    let typography: SweetLyricsTypography
+    let start: Double
+    let end: Double
+
+    private static let bulletDiameter: CGFloat = 0.348
+    private static let bulletAdvance: CGFloat = 0.485
+
+    var body: some View {
+        let dotFont = typography.fontSize * 1.3
+        let diameter = dotFont * Self.bulletDiameter
+        // `--dot-gap: Sweetclamp(0.005rem, 1.7cqw, 0.18rem)`
+        let gap = min(max(0.08, typography.cqw * 1.7), 2.88)
+        if presence > 0 {
+            HStack(spacing: gap) {
+                ForEach(dots.indices, id: \.self) { i in
+                    let dot = dots[i]
+                    Circle()
+                        .fill(.white.opacity(SweetGradientAlpha.lead.lit))
+                        .frame(width: diameter, height: diameter)
+                        .frame(width: dotFont * Self.bulletAdvance)
+                        .opacity(dot.opacity)
+                        .SweetlyricGlow(dot.glow * typography.glowScale, kind: .dot)
+                        .scaleEffect(dot.scale)
+                        .offset(y: dot.yOffset * typography.fontSize)
+                        .modifier(MildTimedFragment(start: MildPlayfulEffects.dotDeparture(start: start, end: end, index: i,
+                                                                                         speed: typography.playful.configuration.floatAway),
+                                                    end: end, context: typography.playful, fontHeight: dotFont, allowSpin: false))
+                }
+            }
+            .frame(height: typography.fontSize * 1.18)
+            .scaleEffect(max(groupScale, 0.0001), anchor: .center)
+        }
+    }
+}
+
+// MARK: - Flow layout
+
+/// Wrapping row layout: places subviews left to right and starts a new row when out of width.
+/// The next item belongs to the same word: keep them on one row when the word fits.
+struct SweetGluedToNext: LayoutValueKey {
+    static let defaultValue = false
+}
+
+/// How much a piece is scaled about its own centre. The pieces of one word move apart or
+/// together by it, so the word grows as one: scaled each about its own centre, a growing
+/// syllable ran into its neighbours and a shrinking one left a gap (worst with three or more).
+struct SweetGlyphGrowth: LayoutValueKey {
+    static let defaultValue: CGFloat = 1
+}
+
+/// Horizontal shifts that keep the pieces of a word touching while each is scaled by its
+/// growth about its own centre; the word as a whole stays centred where it was laid out.
+func SweetwordGrowthShifts(widths: [CGFloat], growth: [CGFloat]) -> [CGFloat] {
+    let extra = zip(widths, growth).map { $0 * ($1 - 1) }
+    let total = extra.reduce(0, +)
+    var before: CGFloat = 0
+    return extra.map { piece in
+        defer { before += piece }
+        return before + piece / 2 - total / 2
+    }
+}
+
+/// Wrapping row layout for syllables. Words (runs of glued syllables) stay together and wrap as
+/// a unit, like text; a word wider than the whole row (Japanese and Chinese lines are often one
+/// long "word" with no spaces) breaks between its syllables instead of running off screen.
+struct SweetFlowLayout: Layout {
+    var alignment: HorizontalAlignment = .leading
+    var spacing: CGFloat
+    var rowSpacing: CGFloat
+
+    private struct Row {
+        var items: [(index: Int, x: CGFloat)] = []
+        var width: CGFloat = 0
+        var height: CGFloat = 0
+
+        mutating func append(_ index: Int, size: CGSize, gap: CGFloat) {
+            let x = items.isEmpty ? 0 : width + gap
+            items.append((index, x))
+            width = x + size.width
+            height = max(height, size.height)
+        }
+    }
+
+    /// Bounds arrive rounded to the pixel grid; without slack the widest row could stop fitting
+    /// on placement and spill into an extra row over the next line.
+    private static let slack: CGFloat = 1
+
+    private func arrangeRows(for subviews: Subviews, maxWidth rawWidth: CGFloat) -> ([Row], [CGSize]) {
+        let maxWidth = rawWidth + Self.slack
+        let sizes = subviews.map { view in
+            let natural = view.sizeThatFits(.unspecified)
+            // Line-only fallbacks and some providers keep a sentence in one
+            // timed chunk. A chunk wider than the viewport must wrap as text.
+            if rawWidth.isFinite && natural.width > maxWidth {
+                return view.sizeThatFits(ProposedViewSize(width: max(1, rawWidth), height: nil))
+            }
+            return natural
+        }
+
+        // Words: runs of glued subviews.
+        var words: [[Int]] = []
+        var current: [Int] = []
+        for index in subviews.indices {
+            current.append(index)
+            if !subviews[index][SweetGluedToNext.self] {
+                words.append(current)
+                current = []
+            }
+        }
+        if !current.isEmpty { words.append(current) }
+
+        var rows: [Row] = []
+        var row = Row()
+        func newRow() {
+            if !row.items.isEmpty { rows.append(row) }
+            row = Row()
+        }
+
+        for word in words {
+            let wordWidth = word.reduce(0) { $0 + sizes[$1].width }
+            if wordWidth <= maxWidth {
+                if !row.items.isEmpty, row.width + spacing + wordWidth > maxWidth { newRow() }
+                for (k, index) in word.enumerated() {
+                    row.append(index, size: sizes[index], gap: k == 0 ? spacing : 0)
+                }
+            } else {
+                // Too long for any row: break between its syllables.
+                for (k, index) in word.enumerated() {
+                    let gap: CGFloat = k == 0 ? spacing : 0
+                    if !row.items.isEmpty, row.width + gap + sizes[index].width > maxWidth { newRow() }
+                    row.append(index, size: sizes[index], gap: gap)
+                }
+            }
+        }
+        newRow()
+        return (rows, sizes)
+    }
+
+    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
+        let maxWidth = proposal.width ?? .infinity
+        let (rows, _) = arrangeRows(for: subviews, maxWidth: maxWidth)
+        let height = rows.reduce(0) { $0 + $1.height } + rowSpacing * CGFloat(max(rows.count - 1, 0))
+        // Take the whole offered width, so placement wraps against exactly what was measured.
+        let width = rows.map(\.width).max() ?? 0
+        return CGSize(width: proposal.width.flatMap { $0.isFinite ? $0 : nil } ?? width, height: height)
+    }
+
+    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
+        let (rows, sizes) = arrangeRows(for: subviews, maxWidth: bounds.width)
+        var y = bounds.minY
+        for row in rows {
+            let start: CGFloat
+            switch alignment {
+            case .trailing: start = bounds.maxX - row.width
+            case .center: start = bounds.minX + (bounds.width - row.width) / 2
+            default: start = bounds.minX
+            }
+            let shifts = growthShifts(row, sizes: sizes, subviews: subviews)
+            for (k, item) in row.items.enumerated() {
+                let size = sizes[item.index]
+                subviews[item.index].place(
+                    at: CGPoint(x: start + item.x + shifts[k], y: y + (row.height - size.height)),
+                    anchor: .topLeading,
+                    proposal: ProposedViewSize(size)
+                )
+            }
+            y += row.height + rowSpacing
+        }
+    }
+
+    /// Per item of `row`: the shift that keeps each word's pieces touching as they grow. A word
+    /// broken over two rows is a word of its own on each.
+    private func growthShifts(_ row: Row, sizes: [CGSize], subviews: Subviews) -> [CGFloat] {
+        var shifts: [CGFloat] = []
+        shifts.reserveCapacity(row.items.count)
+        var run: [Int] = []
+        func flush() {
+            guard !run.isEmpty else { return }
+            shifts += SweetwordGrowthShifts(widths: run.map { sizes[$0].width },
+                                       growth: run.map { subviews[$0][SweetGlyphGrowth.self] })
+            run = []
+        }
+        for item in row.items {
+            run.append(item.index)
+            if !subviews[item.index][SweetGluedToNext.self] { flush() }
+        }
+        flush()
+        return shifts
+    }
+}

@@ -1,0 +1,1177 @@
+{
+  "version": 1,
+  "animations": {
+    "dance": {
+      "source": "dance-1.webp",
+      "sourceSHA256": "f0c48f0d0084ff22841817f4f1e2c54e592c6fbd1e167f9d98bc2130d6d6f2fd",
+      "frames": [
+        {
+          "file": "Frames/dance/000.png",
+          "seconds": 0.08,
+          "bounds": [
+            17,
+            2,
+            105,
+            95
+          ]
+        },
+        {
+          "file": "Frames/dance/001.png",
+          "seconds": 0.08,
+          "bounds": [
+            17,
+            2,
+            105,
+            95
+          ]
+        },
+        {
+          "file": "Frames/dance/002.png",
+          "seconds": 0.08,
+          "bounds": [
+            17,
+            2,
+            105,
+            95
+          ]
+        },
+        {
+          "file": "Frames/dance/003.png",
+          "seconds": 0.08,
+          "bounds": [
+            18,
+            2,
+            106,
+            95
+          ]
+        },
+        {
+          "file": "Frames/dance/004.png",
+          "seconds": 0.08,
+          "bounds": [
+            17,
+            2,
+            105,
+            95
+          ]
+        },
+        {
+          "file": "Frames/dance/005.png",
+          "seconds": 0.08,
+          "bounds": [
+            18,
+            1,
+            106,
+            95
+          ]
+        },
+        {
+          "file": "Frames/dance/006.png",
+          "seconds": 0.08,
+          "bounds": [
+            17,
+            2,
+            105,
+            95
+          ]
+        },
+        {
+          "file": "Frames/dance/007.png",
+          "seconds": 0.08,
+          "bounds": [
+            18,
+            1,
+            106,
+            95
+          ]
+        },
+        {
+          "file": "Frames/dance/008.png",
+          "seconds": 0.08,
+          "bounds": [
+            17,
+            2,
+            105,
+            95
+          ]
+        },
+        {
+          "file": "Frames/dance/009.png",
+          "seconds": 0.08,
+          "bounds": [
+            18,
+            1,
+            106,
+            95
+          ]
+        },
+        {
+          "file": "Frames/dance/010.png",
+          "seconds": 0.08,
+          "bounds": [
+            17,
+            2,
+            105,
+            95
+          ]
+        },
+        {
+          "file": "Frames/dance/011.png",
+          "seconds": 0.08,
+          "bounds": [
+            18,
+            1,
+            107,
+            95
+          ]
+        },
+        {
+          "file": "Frames/dance/012.png",
+          "seconds": 0.08,
+          "bounds": [
+            0,
+            2,
+            90,
+            95
+          ]
+        },
+        {
+          "file": "Frames/dance/013.png",
+          "seconds": 0.08,
+          "bounds": [
+            0,
+            1,
+            89,
+            95
+          ]
+        },
+        {
+          "file": "Frames/dance/014.png",
+          "seconds": 0.08,
+          "bounds": [
+            4,
+            1,
+            90,
+            95
+          ]
+        },
+        {
+          "file": "Frames/dance/015.png",
+          "seconds": 0.08,
+          "bounds": [
+            4,
+            1,
+            90,
+            95
+          ]
+        },
+        {
+          "file": "Frames/dance/016.png",
+          "seconds": 0.08,
+          "bounds": [
+            3,
+            1,
+            90,
+            95
+          ]
+        },
+        {
+          "file": "Frames/dance/017.png",
+          "seconds": 0.08,
+          "bounds": [
+            2,
+            1,
+            90,
+            95
+          ]
+        },
+        {
+          "file": "Frames/dance/018.png",
+          "seconds": 0.08,
+          "bounds": [
+            3,
+            1,
+            90,
+            95
+          ]
+        },
+        {
+          "file": "Frames/dance/019.png",
+          "seconds": 0.08,
+          "bounds": [
+            2,
+            1,
+            90,
+            95
+          ]
+        },
+        {
+          "file": "Frames/dance/020.png",
+          "seconds": 0.08,
+          "bounds": [
+            3,
+            1,
+            90,
+            95
+          ]
+        },
+        {
+          "file": "Frames/dance/021.png",
+          "seconds": 0.08,
+          "bounds": [
+            2,
+            1,
+            90,
+            95
+          ]
+        },
+        {
+          "file": "Frames/dance/022.png",
+          "seconds": 0.08,
+          "bounds": [
+            3,
+            1,
+            90,
+            95
+          ]
+        },
+        {
+          "file": "Frames/dance/023.png",
+          "seconds": 0.08,
+          "bounds": [
+            2,
+            1,
+            90,
+            95
+          ]
+        },
+        {
+          "file": "Frames/dance/024.png",
+          "seconds": 0.08,
+          "bounds": [
+            3,
+            1,
+            91,
+            95
+          ]
+        },
+        {
+          "file": "Frames/dance/025.png",
+          "seconds": 0.08,
+          "bounds": [
+            3,
+            1,
+            91,
+            95
+          ]
+        },
+        {
+          "file": "Frames/dance/026.png",
+          "seconds": 0.08,
+          "bounds": [
+            10,
+            1,
+            87,
+            95
+          ]
+        },
+        {
+          "file": "Frames/dance/027.png",
+          "seconds": 0.08,
+          "bounds": [
+            18,
+            1,
+            107,
+            95
+          ]
+        },
+        {
+          "file": "Frames/dance/028.png",
+          "seconds": 0.08,
+          "bounds": [
+            18,
+            1,
+            106,
+            95
+          ]
+        },
+        {
+          "file": "Frames/dance/029.png",
+          "seconds": 0.08,
+          "bounds": [
+            18,
+            1,
+            106,
+            96
+          ]
+        },
+        {
+          "file": "Frames/dance/030.png",
+          "seconds": 0.08,
+          "bounds": [
+            17,
+            2,
+            105,
+            95
+          ]
+        },
+        {
+          "file": "Frames/dance/031.png",
+          "seconds": 0.08,
+          "bounds": [
+            18,
+            1,
+            106,
+            95
+          ]
+        },
+        {
+          "file": "Frames/dance/032.png",
+          "seconds": 0.08,
+          "bounds": [
+            17,
+            2,
+            105,
+            95
+          ]
+        },
+        {
+          "file": "Frames/dance/033.png",
+          "seconds": 0.08,
+          "bounds": [
+            18,
+            1,
+            106,
+            95
+          ]
+        },
+        {
+          "file": "Frames/dance/034.png",
+          "seconds": 0.08,
+          "bounds": [
+            17,
+            2,
+            105,
+            95
+          ]
+        },
+        {
+          "file": "Frames/dance/035.png",
+          "seconds": 0.08,
+          "bounds": [
+            18,
+            1,
+            106,
+            95
+          ]
+        },
+        {
+          "file": "Frames/dance/036.png",
+          "seconds": 0.08,
+          "bounds": [
+            18,
+            1,
+            106,
+            96
+          ]
+        },
+        {
+          "file": "Frames/dance/037.png",
+          "seconds": 0.08,
+          "bounds": [
+            18,
+            1,
+            106,
+            96
+          ]
+        },
+        {
+          "file": "Frames/dance/038.png",
+          "seconds": 0.08,
+          "bounds": [
+            17,
+            2,
+            105,
+            95
+          ]
+        },
+        {
+          "file": "Frames/dance/039.png",
+          "seconds": 0.08,
+          "bounds": [
+            18,
+            1,
+            106,
+            95
+          ]
+        },
+        {
+          "file": "Frames/dance/040.png",
+          "seconds": 0.08,
+          "bounds": [
+            17,
+            2,
+            105,
+            95
+          ]
+        },
+        {
+          "file": "Frames/dance/041.png",
+          "seconds": 0.08,
+          "bounds": [
+            20,
+            3,
+            97,
+            95
+          ]
+        },
+        {
+          "file": "Frames/dance/042.png",
+          "seconds": 0.08,
+          "bounds": [
+            21,
+            0,
+            93,
+            96
+          ]
+        },
+        {
+          "file": "Frames/dance/043.png",
+          "seconds": 0.08,
+          "bounds": [
+            21,
+            0,
+            93,
+            96
+          ]
+        },
+        {
+          "file": "Frames/dance/044.png",
+          "seconds": 0.08,
+          "bounds": [
+            12,
+            3,
+            89,
+            95
+          ]
+        },
+        {
+          "file": "Frames/dance/045.png",
+          "seconds": 0.08,
+          "bounds": [
+            21,
+            0,
+            93,
+            96
+          ]
+        },
+        {
+          "file": "Frames/dance/046.png",
+          "seconds": 0.08,
+          "bounds": [
+            20,
+            3,
+            97,
+            95
+          ]
+        },
+        {
+          "file": "Frames/dance/047.png",
+          "seconds": 0.08,
+          "bounds": [
+            21,
+            0,
+            93,
+            96
+          ]
+        },
+        {
+          "file": "Frames/dance/048.png",
+          "seconds": 0.08,
+          "bounds": [
+            21,
+            0,
+            93,
+            96
+          ]
+        },
+        {
+          "file": "Frames/dance/049.png",
+          "seconds": 0.08,
+          "bounds": [
+            21,
+            0,
+            93,
+            96
+          ]
+        },
+        {
+          "file": "Frames/dance/050.png",
+          "seconds": 0.08,
+          "bounds": [
+            20,
+            3,
+            97,
+            95
+          ]
+        },
+        {
+          "file": "Frames/dance/051.png",
+          "seconds": 0.08,
+          "bounds": [
+            21,
+            0,
+            93,
+            96
+          ]
+        }
+      ],
+      "width": 108,
+      "height": 96
+    },
+    "tiny": {
+      "source": "dance-2.webp",
+      "sourceSHA256": "c9ce13f4db0602b6acd855dfeb762d5f308a7c69eee07597c9940ee633afada2",
+      "frames": [
+        {
+          "file": "Frames/tiny/000.png",
+          "seconds": 0.02,
+          "bounds": [
+            3,
+            4,
+            36,
+            39
+          ]
+        },
+        {
+          "file": "Frames/tiny/001.png",
+          "seconds": 0.02,
+          "bounds": [
+            3,
+            3,
+            36,
+            38
+          ]
+        },
+        {
+          "file": "Frames/tiny/002.png",
+          "seconds": 0.02,
+          "bounds": [
+            3,
+            3,
+            36,
+            38
+          ]
+        },
+        {
+          "file": "Frames/tiny/003.png",
+          "seconds": 0.02,
+          "bounds": [
+            3,
+            3,
+            36,
+            38
+          ]
+        },
+        {
+          "file": "Frames/tiny/004.png",
+          "seconds": 0.02,
+          "bounds": [
+            3,
+            3,
+            36,
+            38
+          ]
+        },
+        {
+          "file": "Frames/tiny/005.png",
+          "seconds": 0.02,
+          "bounds": [
+            4,
+            3,
+            37,
+            38
+          ]
+        },
+        {
+          "file": "Frames/tiny/006.png",
+          "seconds": 0.02,
+          "bounds": [
+            4,
+            4,
+            37,
+            38
+          ]
+        },
+        {
+          "file": "Frames/tiny/007.png",
+          "seconds": 0.02,
+          "bounds": [
+            5,
+            5,
+            38,
+            39
+          ]
+        },
+        {
+          "file": "Frames/tiny/008.png",
+          "seconds": 0.02,
+          "bounds": [
+            5,
+            5,
+            38,
+            40
+          ]
+        },
+        {
+          "file": "Frames/tiny/009.png",
+          "seconds": 0.02,
+          "bounds": [
+            6,
+            6,
+            39,
+            40
+          ]
+        },
+        {
+          "file": "Frames/tiny/010.png",
+          "seconds": 0.02,
+          "bounds": [
+            6,
+            5,
+            39,
+            40
+          ]
+        },
+        {
+          "file": "Frames/tiny/011.png",
+          "seconds": 0.02,
+          "bounds": [
+            6,
+            5,
+            39,
+            39
+          ]
+        },
+        {
+          "file": "Frames/tiny/012.png",
+          "seconds": 0.02,
+          "bounds": [
+            7,
+            4,
+            40,
+            38
+          ]
+        },
+        {
+          "file": "Frames/tiny/013.png",
+          "seconds": 0.02,
+          "bounds": [
+            7,
+            3,
+            40,
+            38
+          ]
+        },
+        {
+          "file": "Frames/tiny/014.png",
+          "seconds": 0.02,
+          "bounds": [
+            6,
+            2,
+            39,
+            37
+          ]
+        },
+        {
+          "file": "Frames/tiny/015.png",
+          "seconds": 0.02,
+          "bounds": [
+            6,
+            2,
+            39,
+            37
+          ]
+        },
+        {
+          "file": "Frames/tiny/016.png",
+          "seconds": 0.02,
+          "bounds": [
+            6,
+            3,
+            39,
+            37
+          ]
+        },
+        {
+          "file": "Frames/tiny/017.png",
+          "seconds": 0.02,
+          "bounds": [
+            5,
+            3,
+            38,
+            37
+          ]
+        },
+        {
+          "file": "Frames/tiny/018.png",
+          "seconds": 0.02,
+          "bounds": [
+            5,
+            3,
+            38,
+            38
+          ]
+        },
+        {
+          "file": "Frames/tiny/019.png",
+          "seconds": 0.02,
+          "bounds": [
+            4,
+            5,
+            37,
+            39
+          ]
+        },
+        {
+          "file": "Frames/tiny/020.png",
+          "seconds": 0.02,
+          "bounds": [
+            4,
+            5,
+            37,
+            39
+          ]
+        },
+        {
+          "file": "Frames/tiny/021.png",
+          "seconds": 0.02,
+          "bounds": [
+            3,
+            5,
+            37,
+            40
+          ]
+        },
+        {
+          "file": "Frames/tiny/022.png",
+          "seconds": 0.02,
+          "bounds": [
+            3,
+            6,
+            36,
+            41
+          ]
+        },
+        {
+          "file": "Frames/tiny/023.png",
+          "seconds": 0.02,
+          "bounds": [
+            3,
+            5,
+            36,
+            41
+          ]
+        },
+        {
+          "file": "Frames/tiny/024.png",
+          "seconds": 0.02,
+          "bounds": [
+            3,
+            5,
+            36,
+            40
+          ]
+        }
+      ],
+      "width": 42,
+      "height": 44
+    },
+    "explosion": {
+      "source": "dance-3.webp",
+      "sourceSHA256": "ec9997b0018bbf566428d36df84a2d532fd921c27d236ce76eeece04604e079c",
+      "frames": [
+        {
+          "file": "Frames/explosion/000.png",
+          "seconds": 0.02,
+          "bounds": [
+            3,
+            0,
+            42,
+            48
+          ]
+        },
+        {
+          "file": "Frames/explosion/001.png",
+          "seconds": 0.02,
+          "bounds": [
+            4,
+            0,
+            41,
+            48
+          ]
+        },
+        {
+          "file": "Frames/explosion/002.png",
+          "seconds": 0.02,
+          "bounds": [
+            4,
+            1,
+            36,
+            48
+          ]
+        },
+        {
+          "file": "Frames/explosion/003.png",
+          "seconds": 0.02,
+          "bounds": [
+            4,
+            1,
+            36,
+            48
+          ]
+        },
+        {
+          "file": "Frames/explosion/004.png",
+          "seconds": 0.02,
+          "bounds": [
+            6,
+            0,
+            36,
+            48
+          ]
+        },
+        {
+          "file": "Frames/explosion/005.png",
+          "seconds": 0.02,
+          "bounds": [
+            7,
+            0,
+            37,
+            48
+          ]
+        },
+        {
+          "file": "Frames/explosion/006.png",
+          "seconds": 0.02,
+          "bounds": [
+            7,
+            22,
+            36,
+            48
+          ]
+        },
+        {
+          "file": "Frames/explosion/007.png",
+          "seconds": 0.02,
+          "bounds": [
+            5,
+            11,
+            36,
+            48
+          ]
+        },
+        {
+          "file": "Frames/explosion/008.png",
+          "seconds": 0.02,
+          "bounds": [
+            4,
+            0,
+            42,
+            48
+          ]
+        },
+        {
+          "file": "Frames/explosion/009.png",
+          "seconds": 0.02,
+          "bounds": [
+            4,
+            1,
+            41,
+            48
+          ]
+        },
+        {
+          "file": "Frames/explosion/010.png",
+          "seconds": 0.02,
+          "bounds": [
+            3,
+            0,
+            43,
+            48
+          ]
+        },
+        {
+          "file": "Frames/explosion/011.png",
+          "seconds": 0.02,
+          "bounds": [
+            3,
+            0,
+            42,
+            48
+          ]
+        }
+      ],
+      "width": 43,
+      "height": 48
+    },
+    "bounce": {
+      "source": "bounce.gif",
+      "sourceSHA256": "feb12f6a60ce75975665b1a5bacb481dd2581a993bf0a0cd915b00901becef3a",
+      "frames": [
+        {
+          "file": "Frames/bounce/000.png",
+          "seconds": 0.02,
+          "bounds": [
+            11,
+            327,
+            33,
+            351
+          ]
+        },
+        {
+          "file": "Frames/bounce/001.png",
+          "seconds": 0.02,
+          "bounds": [
+            11,
+            284,
+            33,
+            308
+          ]
+        },
+        {
+          "file": "Frames/bounce/002.png",
+          "seconds": 0.02,
+          "bounds": [
+            11,
+            245,
+            33,
+            269
+          ]
+        },
+        {
+          "file": "Frames/bounce/003.png",
+          "seconds": 0.02,
+          "bounds": [
+            11,
+            208,
+            33,
+            232
+          ]
+        },
+        {
+          "file": "Frames/bounce/004.png",
+          "seconds": 0.02,
+          "bounds": [
+            11,
+            171,
+            34,
+            194
+          ]
+        },
+        {
+          "file": "Frames/bounce/005.png",
+          "seconds": 0.02,
+          "bounds": [
+            12,
+            138,
+            34,
+            161
+          ]
+        },
+        {
+          "file": "Frames/bounce/006.png",
+          "seconds": 0.02,
+          "bounds": [
+            12,
+            109,
+            34,
+            133
+          ]
+        },
+        {
+          "file": "Frames/bounce/007.png",
+          "seconds": 0.02,
+          "bounds": [
+            12,
+            82,
+            35,
+            105
+          ]
+        },
+        {
+          "file": "Frames/bounce/008.png",
+          "seconds": 0.02,
+          "bounds": [
+            13,
+            58,
+            35,
+            82
+          ]
+        },
+        {
+          "file": "Frames/bounce/009.png",
+          "seconds": 0.02,
+          "bounds": [
+            13,
+            41,
+            35,
+            64
+          ]
+        },
+        {
+          "file": "Frames/bounce/010.png",
+          "seconds": 0.02,
+          "bounds": [
+            13,
+            24,
+            36,
+            48
+          ]
+        },
+        {
+          "file": "Frames/bounce/011.png",
+          "seconds": 0.02,
+          "bounds": [
+            13,
+            15,
+            35,
+            38
+          ]
+        },
+        {
+          "file": "Frames/bounce/012.png",
+          "seconds": 0.02,
+          "bounds": [
+            14,
+            11,
+            36,
+            35
+          ]
+        },
+        {
+          "file": "Frames/bounce/013.png",
+          "seconds": 0.02,
+          "bounds": [
+            14,
+            11,
+            36,
+            34
+          ]
+        },
+        {
+          "file": "Frames/bounce/014.png",
+          "seconds": 0.02,
+          "bounds": [
+            13,
+            13,
+            35,
+            37
+          ]
+        },
+        {
+          "file": "Frames/bounce/015.png",
+          "seconds": 0.02,
+          "bounds": [
+            13,
+            22,
+            36,
+            46
+          ]
+        },
+        {
+          "file": "Frames/bounce/016.png",
+          "seconds": 0.02,
+          "bounds": [
+            13,
+            38,
+            35,
+            62
+          ]
+        },
+        {
+          "file": "Frames/bounce/017.png",
+          "seconds": 0.02,
+          "bounds": [
+            13,
+            56,
+            35,
+            80
+          ]
+        },
+        {
+          "file": "Frames/bounce/018.png",
+          "seconds": 0.02,
+          "bounds": [
+            12,
+            81,
+            35,
+            104
+          ]
+        },
+        {
+          "file": "Frames/bounce/019.png",
+          "seconds": 0.02,
+          "bounds": [
+            12,
+            110,
+            34,
+            133
+          ]
+        },
+        {
+          "file": "Frames/bounce/020.png",
+          "seconds": 0.02,
+          "bounds": [
+            12,
+            139,
+            34,
+            162
+          ]
+        },
+        {
+          "file": "Frames/bounce/021.png",
+          "seconds": 0.02,
+          "bounds": [
+            11,
+            172,
+            34,
+            196
+          ]
+        },
+        {
+          "file": "Frames/bounce/022.png",
+          "seconds": 0.02,
+          "bounds": [
+            11,
+            211,
+            33,
+            234
+          ]
+        },
+        {
+          "file": "Frames/bounce/023.png",
+          "seconds": 0.02,
+          "bounds": [
+            11,
+            247,
+            33,
+            271
+          ]
+        },
+        {
+          "file": "Frames/bounce/024.png",
+          "seconds": 0.02,
+          "bounds": [
+            11,
+            285,
+            33,
+            309
+          ]
+        }
+      ],
+      "width": 48,
+      "height": 364
+    }
+  }
+}

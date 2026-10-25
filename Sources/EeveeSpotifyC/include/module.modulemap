@@ -1,0 +1,8 @@
+module EeveeSpotifyC {
+    header "ASMAudio.h"
+    header "ASMTempoCapture.h"
+    header "ASMWhimsy.h"
+    header "ASMLockScreen.h"
+    umbrella "."
+    export *
+}

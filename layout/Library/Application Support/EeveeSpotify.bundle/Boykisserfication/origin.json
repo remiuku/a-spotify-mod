@@ -1,0 +1,53 @@
+{
+  "archive_sha256": "a8ed2faebe7a6e3288ee6bbedac08533ba79dc5e26c56053b5a0a48b4d660dbe",
+  "version": "0.67",
+  "credits_from_readme": [
+    "Spikerko",
+    "NaeNaeTart"
+  ],
+  "license_in_zip": false,
+  "images": [
+    {
+      "variant": 1,
+      "url": "https://static.spikerko.org/e/bk/1.webp",
+      "bytes": 895348,
+      "sha256": "7df1733fdce524b45c58b671ddcef8b5d053f0a5544d13beea6fadbba43e2c87"
+    },
+    {
+      "variant": 2,
+      "url": "https://static.spikerko.org/e/bk/2.webp",
+      "bytes": 13344,
+      "sha256": "e96a35d8b0b24951dc33a2453f8f0db48c17ccb778e773fce3f973c9884d8985"
+    },
+    {
+      "variant": 3,
+      "url": "https://static.spikerko.org/e/bk/3.webp",
+      "bytes": 13370,
+      "sha256": "8220f52dc60f0a5cd36c415702ffe930d75fb82cce126ad6ed448eecf10e9da1"
+    },
+    {
+      "variant": 4,
+      "url": "https://static.spikerko.org/e/bk/4.webp",
+      "bytes": 28794,
+      "sha256": "0af280408642dd5b2b92c311d0a7ff71ad01bb5d50e10b6ac52768ede2c72b19"
+    },
+    {
+      "variant": 5,
+      "url": "https://static.spikerko.org/e/bk/5.webp",
+      "bytes": 22212,
+      "sha256": "5606f76329463c2927ffc80e95a8fe389b887501d2b2480f7aaa8ffdc2255487"
+    },
+    {
+      "variant": 6,
+      "url": "https://static.spikerko.org/e/bk/6.webp",
+      "bytes": 4550,
+      "sha256": "fb7fd3bea550e4cd4902973348a6a4ae199686412715d6343aa33e271daf3e98"
+    },
+    {
+      "variant": 7,
+      "url": "https://static.spikerko.org/e/bk/7.webp",
+      "bytes": 12776,
+      "sha256": "8497a46cb8850fbdf3352bc80d3b0e31092d0631868933a95932a255208789ff"
+    }
+  ]
+}
