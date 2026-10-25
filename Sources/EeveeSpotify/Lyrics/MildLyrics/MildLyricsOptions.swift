@@ -99,7 +99,7 @@ struct MildLyricsOptions: Codable, Equatable {
         .init(id: "blend", label: "Blend word timing", section: "Sources", values: ["off"] + MildLyricsBlend.definitions.map(\.id))
     ]
     static let toggles: [ToggleSpec] = [
-        .init(id: "enabled", label: "Use Mild controls in Sweet Lyrics", section: "Text", initial: false),
+        .init(id: "enabled", label: "Use Mild controls in Sweet Lyrics", section: "Text", initial: true),
         .init(id: "fold_adlibs", label: "Fold backing vocals", section: "Text", initial: false),
         .init(id: "credits_top", label: "Songwriter credits on top", section: "Text", initial: false),
         .init(id: "hide_gaps", label: "Hide interlude dots", section: "Motion", initial: false),

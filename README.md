@@ -18,6 +18,9 @@ personal ios tweak mashup by [remiuku](https://github.com/remiuku), built on
 - :3 menu, boykisserfication, and a dancer with tempo sync / manual bpm
 - opt-in activity recording for figuring out what broke this time
 
+mild customization is on by default in sweet lyrics. spin, no gravity, float
+away and jelly start at zero. an explicitly saved on/off choice is preserved.
+
 ### does it work
 
 this snapshot targets spotify **9.1.88**. latest local candidate is
