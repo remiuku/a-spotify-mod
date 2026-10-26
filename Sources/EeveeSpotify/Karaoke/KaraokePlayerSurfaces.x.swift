@@ -56,6 +56,20 @@ class KaraokeIndependentLayoutHook: ClassHook<UICollectionViewCompositionalLayou
         if #available(iOS 15.0, *) { return KaraokeIndependentPreview.contentSize(size, layout: target) }
         return size
     }
+    // Batch updates let the anchor policy follow the lyrics card's index exactly.
+    func prepareForCollectionViewUpdates(_ items: [UICollectionViewUpdateItem]) {
+        orig.prepareForCollectionViewUpdates(items)
+        if #available(iOS 15.0, *) { KaraokeIndependentPreview.collectionUpdates(items, layout: target) }
+    }
+}
+
+// reloadData reports no updates, so the anchor policy stops trusting the card's index.
+class KaraokeIndependentListHook: ClassHook<UICollectionView> {
+    typealias Group = KaraokeIndependentPreviewGroup
+    func reloadData() {
+        orig.reloadData()
+        if #available(iOS 15.0, *) { KaraokeIndependentPreview.reloadedData(target) }
+    }
 }
 
 class KaraokePlayerCardHook: ClassHook<UIView> {
@@ -95,6 +109,7 @@ class KaraokePlayerInlineHook: ClassHook<UIView> {
 
 func activateKaraokePlayerSurfaces() {
     guard #available(iOS 15.0, *), ASMInterfaceMode.active == .spotify else { return }
+    KaraokePlayerSurfaces.startObservers()
     if NSClassFromString(KaraokePlayerCardHook.targetName) != nil { KaraokePlayerCardGroup().activate() }
     if NSClassFromString(KaraokePlayerCanvasHook.targetName) != nil { KaraokePlayerCanvasGroup().activate() }
     if NSClassFromString(KaraokePlayerInlineHook.targetName) != nil { KaraokePlayerInlineGroup().activate() }

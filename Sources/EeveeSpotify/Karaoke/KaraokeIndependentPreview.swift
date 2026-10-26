@@ -25,6 +25,14 @@ enum KaraokeIndependentPreview {
         var nativeAlpha: CGFloat = 1
         var nativeInteractive = true
         var nativeAccessibility = false
+        // Anchor mode never flips because a cell left `visibleCells`.
+        // true: native lyrics card replaced; false: gap under controls.
+        var latchedReplacing: Bool?
+        // Any visible lyrics card is replaced and kept hidden, so the preview never sits
+        // beside a revealed native card. KaraokePreviewAnchorPolicy revokes replacement only
+        // on evidence about that specific card, following its index through native batch updates.
+        var anchorState = KaraokePreviewAnchorPolicy.State()
+        var anchorTracked = false
         var reservation: CGFloat { CGFloat(KaraokePlayerPreviewPolicy.headerReservation(contentHeight: Double(height))) }
         var delta: CGFloat { seam == nil ? 0 : reservation - occupied }
         init(_ list: UICollectionView) { self.list = list }
@@ -39,21 +47,48 @@ enum KaraokeIndependentPreview {
             guard let list else { return }
             let previousSeam = seam, previousDelta = delta
             let cells = list.visibleCells
-            let lyrics = cells.first { $0.eeveeContainsClass("Lyrics_CardElementImpl") }
             let controlIDs: Set<String> = ["SPTNowPlayingPlayButton", "QueueButtonNowPlaying", "ShareButtonNowPlayingView", "Components.ConnectButtonOutputSwitcher"]
-            let controls = cells.filter { cell in
+            func hasControls(_ cell: UICollectionViewCell) -> Bool {
                 cell.eeveeFirst(UIView.self, where: { controlIDs.contains($0.accessibilityIdentifier ?? "") }) != nil
-            }.max { first, second in
+            }
+            // Never replace a cell that also hosts playback controls; hiding it would disable them.
+            let lyrics = cells.first { $0.eeveeContainsClass("Lyrics_CardElementImpl") && !hasControls($0) }
+            let controls = cells.filter(hasControls).max { first, second in
                 func bottom(_ cell: UICollectionViewCell) -> CGFloat {
                     guard let index = list.indexPath(for: cell), let attributes = list.collectionViewLayout.layoutAttributesForItem(at: index) else { return 0 }
                     return KaraokeIndependentPreview.nativeFrame(attributes).maxY
                 }
                 return bottom(first) < bottom(second)
             }
-            if let anchor = lyrics ?? controls, let index = list.indexPath(for: anchor),
+            typealias Anchor = KaraokePreviewAnchorPolicy.Index
+            func anchorIndex(_ cell: UICollectionViewCell?) -> Anchor? {
+                cell.flatMap { list.indexPath(for: $0) }.map { Anchor($0.section, $0.item) }
+            }
+            let lyricsIndex = anchorIndex(lyrics)
+            let reconfigured = nativeCell.map { cells.contains($0) && !$0.eeveeContainsClass("Lyrics_CardElementImpl") } ?? false
+            let revoked = anchorState.observe(lyrics: lyricsIndex,
+                visible: Set(list.indexPathsForVisibleItems.map { Anchor($0.section, $0.item) }),
+                counts: (0..<list.numberOfSections).map { list.numberOfItems(inSection: $0) },
+                replacedCellReconfigured: reconfigured)
+            if anchorState.replacing, anchorTracked, !anchorState.tracked {
+                ASMActivityRecorder.store.record("preview.anchor_untracked")
+            }
+            anchorTracked = anchorState.tracked
+            if lyricsIndex != nil {
+                // A native lyrics card is a one-way upgrade; scrolling it offscreen keeps the mode.
+                latchedReplacing = true
+            } else if revoked {
+                // The card is gone: keep the preview at its old seam as a plain gap
+                // (nothing native is revealed) until the controls can anchor it.
+                latchedReplacing = nil; restoreCell(); occupied = 0
+                ASMActivityRecorder.store.record("preview.gap_unlatched", ["reconfigured": String(reconfigured)])
+            }
+            if latchedReplacing == nil, controls != nil { latchedReplacing = false }
+            let anchor: UICollectionViewCell? = latchedReplacing == true ? lyrics : (latchedReplacing == false ? controls : nil)
+            if let anchor, let index = list.indexPath(for: anchor),
                let attributes = list.collectionViewLayout.layoutAttributesForItem(at: index) {
                 let frame = KaraokeIndependentPreview.nativeFrame(attributes)
-                let replacing = lyrics === anchor && controls !== anchor
+                let replacing = latchedReplacing == true
                 seam = replacing ? frame.minY : frame.maxY
                 occupied = replacing ? frame.height : 0
                 if replacing && nativeCell !== anchor {
@@ -142,6 +177,46 @@ enum KaraokeIndependentPreview {
         (objc_getAssociatedObject(cell, &reuseKey) as? WeakHost)?.value?.restoreCell()
     }
     static func refresh() { for root in roots.allObjects { updatePlayer(root) } }
+    /// Called from inside the native batch update: only records it and schedules a pass.
+    static func collectionUpdates(_ items: [UICollectionViewUpdateItem], layout: UICollectionViewLayout) {
+        guard let host = host(layout), host.anchorState.replacing else { return }
+        let updates = items.compactMap(anchorUpdate)
+        if updates.count == items.filter({ $0.updateAction != .none }).count { host.anchorState.apply(updates) }
+        else { host.anchorState.loseTrack() }
+        refresh()
+    }
+    static func reloadedData(_ list: UICollectionView) {
+        guard let host = objc_getAssociatedObject(list, &hostKey) as? Host else { return }
+        host.anchorState.loseTrack()
+        refresh()
+    }
+    private static func anchorUpdate(_ item: UICollectionViewUpdateItem) -> KaraokePreviewAnchorPolicy.Update? {
+        typealias Anchor = KaraokePreviewAnchorPolicy.Index
+        // Section updates carry an item of NSNotFound.
+        func split(_ path: IndexPath?) -> (section: Int, item: Int?)? {
+            guard let path, path.count >= 1 else { return nil }
+            let item = path.count >= 2 ? path[1] : NSNotFound
+            return (path[0], item == NSNotFound ? nil : item)
+        }
+        let before = split(item.indexPathBeforeUpdate), after = split(item.indexPathAfterUpdate)
+        switch item.updateAction {
+        case .insert:
+            guard let after else { return nil }
+            return after.item.map { .insert(Anchor(after.section, $0)) } ?? .insertSection(after.section)
+        case .delete:
+            guard let before else { return nil }
+            return before.item.map { .delete(Anchor(before.section, $0)) } ?? .deleteSection(before.section)
+        case .reload:
+            guard let before else { return nil }
+            return before.item.map { .reload(Anchor(before.section, $0)) } ?? .reloadSection(before.section)
+        case .move:
+            guard let before, let after else { return nil }
+            if let from = before.item, let to = after.item { return .move(Anchor(before.section, from), Anchor(after.section, to)) }
+            return before.item == nil && after.item == nil ? .moveSection(before.section, after.section) : nil
+        default:
+            return nil
+        }
+    }
     static func owns(_ view: UIView) -> Bool {
         var ancestor: UIView? = view
         while let current = ancestor {
