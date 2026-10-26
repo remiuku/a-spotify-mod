@@ -28,12 +28,10 @@ enum KaraokeIndependentPreview {
         // Anchor mode never flips because a cell left `visibleCells`.
         // true: native lyrics card replaced; false: gap under controls.
         var latchedReplacing: Bool?
-        // Ownership of a lyrics card can't be proven (Spotify may refill the same card view
-        // in place), so any visible lyrics card is replaced and kept hidden: the preview never
-        // sits beside a revealed native card. Replacement is revoked only when Spotify removes
-        // the card: its slot is on screen without one, or the item set changed while it was off.
-        var replacedIndex: IndexPath?
-        var itemSignature: [Int] = []
+        // Any visible lyrics card is replaced and kept hidden, so the preview never sits
+        // beside a revealed native card. KaraokePreviewAnchorPolicy revokes replacement only
+        // on evidence about that specific card, not unrelated card insertions or removals.
+        var anchorState = KaraokePreviewAnchorPolicy.State()
         var reservation: CGFloat { CGFloat(KaraokePlayerPreviewPolicy.headerReservation(contentHeight: Double(height))) }
         var delta: CGFloat { seam == nil ? 0 : reservation - occupied }
         init(_ list: UICollectionView) { self.list = list }
@@ -61,20 +59,24 @@ enum KaraokeIndependentPreview {
                 }
                 return bottom(first) < bottom(second)
             }
-            let signature = (0..<list.numberOfSections).map { list.numberOfItems(inSection: $0) }
-            if let lyrics, let index = list.indexPath(for: lyrics) {
+            typealias Anchor = KaraokePreviewAnchorPolicy.Index
+            func anchorIndex(_ cell: UICollectionViewCell?) -> Anchor? {
+                cell.flatMap { list.indexPath(for: $0) }.map { Anchor($0.section, $0.item) }
+            }
+            let lyricsIndex = anchorIndex(lyrics)
+            let reconfigured = nativeCell.map { cells.contains($0) && !$0.eeveeContainsClass("Lyrics_CardElementImpl") } ?? false
+            let revoked = anchorState.observe(lyrics: lyricsIndex, controls: anchorIndex(controls),
+                visible: Set(list.indexPathsForVisibleItems.map { Anchor($0.section, $0.item) }),
+                counts: (0..<list.numberOfSections).map { list.numberOfItems(inSection: $0) },
+                replacedCellReconfigured: reconfigured)
+            if lyricsIndex != nil {
                 // A native lyrics card is a one-way upgrade; scrolling it offscreen keeps the mode.
-                latchedReplacing = true; replacedIndex = index; itemSignature = signature
-            } else if latchedReplacing == true {
-                // Scrolled away: slot off screen and item set unchanged, so keep the geometry.
-                // Removed: slot on screen without a lyrics card, or items changed while it was off.
-                let slotVisible = replacedIndex.map { list.indexPathsForVisibleItems.contains($0) } ?? false
-                if slotVisible || signature != itemSignature {
-                    // The card is gone: keep the preview at its old seam as a plain gap
-                    // (nothing native is revealed) until the controls can anchor it.
-                    latchedReplacing = nil; replacedIndex = nil; restoreCell(); occupied = 0
-                    ASMActivityRecorder.store.record("preview.gap_unlatched", ["slot_visible": String(slotVisible)])
-                }
+                latchedReplacing = true
+            } else if revoked {
+                // The card is gone: keep the preview at its old seam as a plain gap
+                // (nothing native is revealed) until the controls can anchor it.
+                latchedReplacing = nil; restoreCell(); occupied = 0
+                ASMActivityRecorder.store.record("preview.gap_unlatched", ["reconfigured": String(reconfigured)])
             }
             if latchedReplacing == nil, controls != nil { latchedReplacing = false }
             let anchor: UICollectionViewCell? = latchedReplacing == true ? lyrics : (latchedReplacing == false ? controls : nil)
