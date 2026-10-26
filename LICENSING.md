@@ -17,7 +17,7 @@ notices, including JamesDSP, WDL, libbs2b, fishhook, and permissive renderer
 dependencies. Consult their original files and the bundled notices rather
 than treating this page as a replacement licence for every file.
 
-The repository owner confirmed on October 25, 2026 that they obtained permission
+The repository owner confirmed on October 26, 2026 that they obtained permission
 to include the Boykisserfication extension material. No new blanket open-source
 licence for those images is asserted here; the permission's exact written terms
 are not included in this repository. The four separately supplied dance media
