@@ -30,8 +30,9 @@ enum KaraokeIndependentPreview {
         var latchedReplacing: Bool?
         // Any visible lyrics card is replaced and kept hidden, so the preview never sits
         // beside a revealed native card. KaraokePreviewAnchorPolicy revokes replacement only
-        // on evidence about that specific card, not unrelated card insertions or removals.
+        // on evidence about that specific card, following its index through native batch updates.
         var anchorState = KaraokePreviewAnchorPolicy.State()
+        var anchorTracked = false
         var reservation: CGFloat { CGFloat(KaraokePlayerPreviewPolicy.headerReservation(contentHeight: Double(height))) }
         var delta: CGFloat { seam == nil ? 0 : reservation - occupied }
         init(_ list: UICollectionView) { self.list = list }
@@ -65,10 +66,14 @@ enum KaraokeIndependentPreview {
             }
             let lyricsIndex = anchorIndex(lyrics)
             let reconfigured = nativeCell.map { cells.contains($0) && !$0.eeveeContainsClass("Lyrics_CardElementImpl") } ?? false
-            let revoked = anchorState.observe(lyrics: lyricsIndex, controls: anchorIndex(controls),
+            let revoked = anchorState.observe(lyrics: lyricsIndex,
                 visible: Set(list.indexPathsForVisibleItems.map { Anchor($0.section, $0.item) }),
                 counts: (0..<list.numberOfSections).map { list.numberOfItems(inSection: $0) },
                 replacedCellReconfigured: reconfigured)
+            if anchorState.replacing, anchorTracked, !anchorState.tracked {
+                ASMActivityRecorder.store.record("preview.anchor_untracked")
+            }
+            anchorTracked = anchorState.tracked
             if lyricsIndex != nil {
                 // A native lyrics card is a one-way upgrade; scrolling it offscreen keeps the mode.
                 latchedReplacing = true
@@ -172,6 +177,46 @@ enum KaraokeIndependentPreview {
         (objc_getAssociatedObject(cell, &reuseKey) as? WeakHost)?.value?.restoreCell()
     }
     static func refresh() { for root in roots.allObjects { updatePlayer(root) } }
+    /// Called from inside the native batch update: only records it and schedules a pass.
+    static func collectionUpdates(_ items: [UICollectionViewUpdateItem], layout: UICollectionViewLayout) {
+        guard let host = host(layout), host.anchorState.replacing else { return }
+        let updates = items.compactMap(anchorUpdate)
+        if updates.count == items.filter({ $0.updateAction != .none }).count { host.anchorState.apply(updates) }
+        else { host.anchorState.loseTrack() }
+        refresh()
+    }
+    static func reloadedData(_ list: UICollectionView) {
+        guard let host = objc_getAssociatedObject(list, &hostKey) as? Host else { return }
+        host.anchorState.loseTrack()
+        refresh()
+    }
+    private static func anchorUpdate(_ item: UICollectionViewUpdateItem) -> KaraokePreviewAnchorPolicy.Update? {
+        typealias Anchor = KaraokePreviewAnchorPolicy.Index
+        // Section updates carry an item of NSNotFound.
+        func split(_ path: IndexPath?) -> (section: Int, item: Int?)? {
+            guard let path, path.count >= 1 else { return nil }
+            let item = path.count >= 2 ? path[1] : NSNotFound
+            return (path[0], item == NSNotFound ? nil : item)
+        }
+        let before = split(item.indexPathBeforeUpdate), after = split(item.indexPathAfterUpdate)
+        switch item.updateAction {
+        case .insert:
+            guard let after else { return nil }
+            return after.item.map { .insert(Anchor(after.section, $0)) } ?? .insertSection(after.section)
+        case .delete:
+            guard let before else { return nil }
+            return before.item.map { .delete(Anchor(before.section, $0)) } ?? .deleteSection(before.section)
+        case .reload:
+            guard let before else { return nil }
+            return before.item.map { .reload(Anchor(before.section, $0)) } ?? .reloadSection(before.section)
+        case .move:
+            guard let before, let after else { return nil }
+            if let from = before.item, let to = after.item { return .move(Anchor(before.section, from), Anchor(after.section, to)) }
+            return before.item == nil && after.item == nil ? .moveSection(before.section, after.section) : nil
+        default:
+            return nil
+        }
+    }
     static func owns(_ view: UIView) -> Bool {
         var ancestor: UIView? = view
         while let current = ancestor {

@@ -3,13 +3,15 @@ import Foundation
 /// Decides when the independent preview stops replacing the native lyrics card.
 ///
 /// Ownership of a card can't be proven (Spotify may refill the same card view in place),
-/// so a visible lyrics card is always replaced. Replacement is revoked only on evidence
-/// about that specific item, never because unrelated cards were added or removed:
+/// so a visible lyrics card is always replaced. Item counts can't prove that nothing was
+/// inserted (one batch may insert and remove), so the card's index is followed through the
+/// native batch updates themselves. Replacement is revoked only on evidence about that card:
+/// - a reported update deleted the card (or its section);
 /// - the replaced cell is on screen but now hosts something else;
-/// - its index path is on screen without a lyrics card, while nothing in its section
-///   has been inserted or removed since it was last seen (so the index is still valid);
-/// - every position the card could now occupy after the controls is on screen and
-///   none of them is a lyrics card. The range widens by every possible insertion.
+/// - the card's tracked index is on screen without a lyrics card.
+/// When a change can't be followed (reloadData, or counts that don't match the reported
+/// updates), the index is untracked; replacement is then revoked only after every item has
+/// been seen without a lyrics card while nothing changed.
 enum KaraokePreviewAnchorPolicy {
     struct Index: Hashable {
         let section: Int
@@ -17,54 +19,117 @@ enum KaraokePreviewAnchorPolicy {
         init(_ section: Int, _ item: Int) { self.section = section; self.item = item }
     }
 
+    /// One native batch-update item. Deletes and reloads use indices from before the
+    /// batch, inserts use indices after it, and moves go from before to after.
+    enum Update: Equatable {
+        case insert(Index), delete(Index), reload(Index), move(Index, Index)
+        case insertSection(Int), deleteSection(Int), reloadSection(Int), moveSection(Int, Int)
+    }
+
     struct State: Equatable {
         private(set) var replacing = false
-        /// Where the card was last seen and the item counts at that moment.
+        /// The card's current index; nil while replacing means the index is untracked.
         private(set) var lyrics: Index?
-        private(set) var counts: [Int] = []
-        /// Items between the controls and the card when both were seen in one section.
-        private(set) var offsetFromControls: Int?
-        /// Upper bound on items inserted into the card's section since it was seen.
-        private(set) var possibleInserts = 0
-        /// Any insertion or removal in the card's section (or a section-count change).
-        private(set) var sectionChanged = false
+        /// Expected item count of the card's section, when known.
+        private(set) var sectionCount: Int?
+        /// A reported update deleted the card.
+        private(set) var deleted = false
+        /// Untracked: items seen without a lyrics card while the counts stayed `sweepCounts`.
+        private(set) var swept: Set<Index> = []
+        private(set) var sweepCounts: [Int] = []
 
         init() {}
 
+        var tracked: Bool { lyrics != nil }
+
+        /// Feeds one native batch update, as reported to the layout.
+        mutating func apply(_ updates: [Update]) {
+            guard replacing else { return }
+            swept = []
+            guard let card = lyrics else { return }
+            var section = card.section, item = card.item, count = sectionCount
+            if updates.contains(.deleteSection(card.section)) || updates.contains(.delete(card)) { deleted = true; return }
+            if updates.contains(.reloadSection(card.section)) { loseTrack(); return }
+            if updates.contains(where: { if case .moveSection(let from, let to) = $0 { return from == card.section || to == card.section } else { return false } }) {
+                loseTrack(); return
+            }
+
+            // Sections: rank among surviving sections, then shift past inserted ones.
+            section -= updates.filter {
+                switch $0 {
+                case .deleteSection(let s), .moveSection(let s, _): return s < card.section
+                default: return false
+                }
+            }.count
+            for target in updates.compactMap({ (update: Update) -> Int? in
+                switch update {
+                case .insertSection(let s), .moveSection(_, let s): return s
+                default: return nil
+                }
+            }).sorted() where target <= section { section += 1 }
+
+            if let moved = updates.lazy.compactMap({ (update: Update) -> Index? in
+                if case .move(card, let to) = update { return to } else { return nil }
+            }).first {
+                lyrics = moved; sectionCount = nil; return
+            }
+
+            // Items: rank among surviving items of the old section, then shift past
+            // items inserted or moved into the new section at or before that position.
+            let leaving = updates.compactMap { (update: Update) -> Int? in
+                switch update {
+                case .delete(let index), .move(let index, _): return index.section == card.section ? index.item : nil
+                default: return nil
+                }
+            }
+            let arriving = updates.compactMap { (update: Update) -> Int? in
+                switch update {
+                case .insert(let index), .move(_, let index): return index.section == section ? index.item : nil
+                default: return nil
+                }
+            }.sorted()
+            item -= leaving.filter { $0 < card.item }.count
+            for target in arriving where target <= item { item += 1 }
+            count = count.map { $0 - leaving.count + arriving.count }
+            lyrics = Index(section, item); sectionCount = count
+        }
+
+        /// A change that can't be followed, such as reloadData.
+        mutating func loseTrack() {
+            guard replacing else { return }
+            lyrics = nil; sectionCount = nil; swept = []
+        }
+
         /// Feeds one layout pass. Returns true when replacement was revoked by this pass.
         @discardableResult
-        mutating func observe(lyrics seen: Index?, controls: Index?, visible: Set<Index>,
-                              counts current: [Int], replacedCellReconfigured: Bool) -> Bool {
+        mutating func observe(lyrics seen: Index?, visible: Set<Index>, counts: [Int],
+                              replacedCellReconfigured: Bool) -> Bool {
             if let seen {
-                replacing = true; lyrics = seen; counts = current
-                possibleInserts = 0; sectionChanged = false
-                if let controls, controls.section == seen.section, controls.item < seen.item {
-                    offsetFromControls = seen.item - controls.item
-                }
+                self = State()
+                replacing = true; lyrics = seen
+                sectionCount = seen.section < counts.count ? counts[seen.section] : nil
                 return false
             }
-            guard replacing, let last = lyrics else { return false }
+            guard replacing else { return false }
 
-            if current.count != counts.count || last.section >= current.count {
-                sectionChanged = true
-            } else {
-                let before = counts[last.section], now = current[last.section]
-                if now != before { sectionChanged = true }
-                possibleInserts += max(0, now - before)
+            var revoked = deleted || replacedCellReconfigured
+            if !revoked, let card = lyrics {
+                if card.section >= counts.count || (sectionCount.map { $0 != counts[card.section] } ?? false) {
+                    // Counts moved without matching updates: something wasn't reported.
+                    loseTrack()
+                } else if visible.contains(card) {
+                    revoked = true
+                }
             }
-            counts = current
-
-            var removed = replacedCellReconfigured
-            if !removed, !sectionChanged, visible.contains(last) { removed = true }
-            if !removed, let offset = offsetFromControls, let controls, controls.section == last.section,
-               controls.section < current.count {
-                let first = controls.item + 1
-                let last = min(controls.item + offset + possibleInserts, current[controls.section] - 1)
-                // No position left after the controls, or every candidate is visible without the card.
-                removed = first > last || (first...last).allSatisfy { visible.contains(Index(controls.section, $0)) }
+            if !revoked, lyrics == nil {
+                if counts != sweepCounts { swept = []; sweepCounts = counts }
+                swept.formUnion(visible)
+                revoked = counts.enumerated().allSatisfy { section, count in
+                    (0..<count).allSatisfy { swept.contains(Index(section, $0)) }
+                }
             }
-            if removed { self = State() }
-            return removed
+            if revoked { self = State() }
+            return revoked
         }
     }
 }
