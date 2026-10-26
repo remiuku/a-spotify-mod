@@ -96,8 +96,15 @@ private struct KaraokePlayerPreviewLines: View {
 }
 
 @available(iOS 15.0, *)
+private final class KaraokePreviewAnimatorBox: ObservableObject {
+    let animator: SweetLyricsAnimator
+    init(lyrics: SweetPreparedLyrics, simple: Bool) { animator = SweetLyricsAnimator(lyrics: lyrics, simple: simple) }
+}
+
+@available(iOS 15.0, *)
 private struct KaraokePreviewAnimatedWindow: View {
-    @State private var animator: SweetLyricsAnimator
+    @StateObject private var box: KaraokePreviewAnimatorBox
+    private var animator: SweetLyricsAnimator { box.animator }
     let sample: KaraokePreviewClock.Sample
     let position: Double
     let options: KaraokeOptions
@@ -105,7 +112,8 @@ private struct KaraokePreviewAnimatedWindow: View {
     let reduceMotion: Bool
     init(lyrics: SweetPreparedLyrics, sample: KaraokePreviewClock.Sample, position: Double,
          options: KaraokeOptions, mild: MildLyricsOptions, reduceMotion: Bool) {
-        _animator = State(initialValue: SweetLyricsAnimator(lyrics: lyrics, simple: options.sweetSimpleLyrics))
+        // StateObject's autoclosure runs once per view identity, not on every parent update.
+        _box = StateObject(wrappedValue: KaraokePreviewAnimatorBox(lyrics: lyrics, simple: options.sweetSimpleLyrics))
         self.sample = sample; self.position = position; self.options = options
         self.mild = mild; self.reduceMotion = reduceMotion
     }
@@ -294,6 +302,9 @@ enum KaraokePlayerSurfaces {
     private static var lastHidden: Set<PlayerPart> = []
     private static let optionsObserver = ASMMainNotificationDelivery.observe(forName: UserDefaults.didChangeNotification) { _ in refresh() }
     private static let trackObserver = ASMMainNotificationDelivery.observe(forName: .eeveeKaraokeLyricsChanged) { _ in refresh() }
+    /// Installs the refresh observers without waiting for a native card, canvas or
+    /// inline view to be laid out (none may exist when Spotify has no native lyrics).
+    static func startObservers() { _ = optionsObserver; _ = trackObserver }
     static var wantsIndependentPreview: Bool {
         let hidden = UserDefaults.playerOptions.hiddenParts
         return enabled && !hidden.contains(.lyricsCard) && !hidden.contains(.allCards)

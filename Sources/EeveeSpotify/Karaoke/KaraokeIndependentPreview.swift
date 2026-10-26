@@ -25,6 +25,10 @@ enum KaraokeIndependentPreview {
         var nativeAlpha: CGFloat = 1
         var nativeInteractive = true
         var nativeAccessibility = false
+        // Anchor mode is decided once per track and never flips because a cell
+        // left `visibleCells`. true: native lyrics card replaced; false: gap under controls.
+        var latchedReplacing: Bool?
+        var latchedTrack: String?
         var reservation: CGFloat { CGFloat(KaraokePlayerPreviewPolicy.headerReservation(contentHeight: Double(height))) }
         var delta: CGFloat { seam == nil ? 0 : reservation - occupied }
         init(_ list: UICollectionView) { self.list = list }
@@ -50,10 +54,16 @@ enum KaraokeIndependentPreview {
                 }
                 return bottom(first) < bottom(second)
             }
-            if let anchor = lyrics ?? controls, let index = list.indexPath(for: anchor),
+            let track = KaraokePlaybackTracker.shared.currentTrackId()
+            if track != latchedTrack { latchedTrack = track; latchedReplacing = nil }
+            // A native lyrics card is a one-way upgrade; scrolling it offscreen keeps the mode.
+            if lyrics != nil { latchedReplacing = true }
+            else if latchedReplacing == nil, controls != nil { latchedReplacing = false }
+            let anchor: UICollectionViewCell? = latchedReplacing == true ? lyrics : (latchedReplacing == false ? controls : nil)
+            if let anchor, let index = list.indexPath(for: anchor),
                let attributes = list.collectionViewLayout.layoutAttributesForItem(at: index) {
                 let frame = KaraokeIndependentPreview.nativeFrame(attributes)
-                let replacing = lyrics === anchor && controls !== anchor
+                let replacing = latchedReplacing == true
                 seam = replacing ? frame.minY : frame.maxY
                 occupied = replacing ? frame.height : 0
                 if replacing && nativeCell !== anchor {

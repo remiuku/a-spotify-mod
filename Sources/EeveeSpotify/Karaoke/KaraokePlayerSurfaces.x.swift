@@ -95,6 +95,7 @@ class KaraokePlayerInlineHook: ClassHook<UIView> {
 
 func activateKaraokePlayerSurfaces() {
     guard #available(iOS 15.0, *), ASMInterfaceMode.active == .spotify else { return }
+    KaraokePlayerSurfaces.startObservers()
     if NSClassFromString(KaraokePlayerCardHook.targetName) != nil { KaraokePlayerCardGroup().activate() }
     if NSClassFromString(KaraokePlayerCanvasHook.targetName) != nil { KaraokePlayerCanvasGroup().activate() }
     if NSClassFromString(KaraokePlayerInlineHook.targetName) != nil { KaraokePlayerInlineGroup().activate() }
