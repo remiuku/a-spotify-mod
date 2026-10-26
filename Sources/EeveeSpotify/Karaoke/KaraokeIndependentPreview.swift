@@ -29,6 +29,10 @@ enum KaraokeIndependentPreview {
         // left `visibleCells`. true: native lyrics card replaced; false: gap under controls.
         var latchedReplacing: Bool?
         var latchedTrack: String?
+        // A lyrics card still on screen when the track changes may be the previous
+        // song's. It can't latch replacement until it is reused, leaves, or times out.
+        weak var staleLyrics: UICollectionViewCell?
+        var trackChangedAt: CFTimeInterval = 0
         var reservation: CGFloat { CGFloat(KaraokePlayerPreviewPolicy.headerReservation(contentHeight: Double(height))) }
         var delta: CGFloat { seam == nil ? 0 : reservation - occupied }
         init(_ list: UICollectionView) { self.list = list }
@@ -43,11 +47,13 @@ enum KaraokeIndependentPreview {
             guard let list else { return }
             let previousSeam = seam, previousDelta = delta
             let cells = list.visibleCells
-            let lyrics = cells.first { $0.eeveeContainsClass("Lyrics_CardElementImpl") }
             let controlIDs: Set<String> = ["SPTNowPlayingPlayButton", "QueueButtonNowPlaying", "ShareButtonNowPlayingView", "Components.ConnectButtonOutputSwitcher"]
-            let controls = cells.filter { cell in
+            func hasControls(_ cell: UICollectionViewCell) -> Bool {
                 cell.eeveeFirst(UIView.self, where: { controlIDs.contains($0.accessibilityIdentifier ?? "") }) != nil
-            }.max { first, second in
+            }
+            // Never replace a cell that also hosts playback controls; hiding it would disable them.
+            let lyrics = cells.first { $0.eeveeContainsClass("Lyrics_CardElementImpl") && !hasControls($0) }
+            let controls = cells.filter(hasControls).max { first, second in
                 func bottom(_ cell: UICollectionViewCell) -> CGFloat {
                     guard let index = list.indexPath(for: cell), let attributes = list.collectionViewLayout.layoutAttributesForItem(at: index) else { return 0 }
                     return KaraokeIndependentPreview.nativeFrame(attributes).maxY
@@ -55,11 +61,23 @@ enum KaraokeIndependentPreview {
                 return bottom(first) < bottom(second)
             }
             let track = KaraokePlaybackTracker.shared.currentTrackId()
-            if track != latchedTrack { latchedTrack = track; latchedReplacing = nil }
+            let now = CACurrentMediaTime()
+            if track != latchedTrack {
+                if latchedTrack != nil { staleLyrics = lyrics; trackChangedAt = now }
+                latchedTrack = track; latchedReplacing = nil
+            }
+            // Gone, replaced by another cell, or kept past the grace period (reconfigured in place).
+            if let stale = staleLyrics, stale !== lyrics || now - trackChangedAt > 1.5 { staleLyrics = nil }
+            let freshLyrics = lyrics === staleLyrics ? nil : lyrics
             // A native lyrics card is a one-way upgrade; scrolling it offscreen keeps the mode.
-            if lyrics != nil { latchedReplacing = true }
-            else if latchedReplacing == nil, controls != nil { latchedReplacing = false }
-            let anchor: UICollectionViewCell? = latchedReplacing == true ? lyrics : (latchedReplacing == false ? controls : nil)
+            if freshLyrics != nil { latchedReplacing = true }
+            else if latchedReplacing == nil, controls != nil, staleLyrics == nil { latchedReplacing = false }
+            let anchor: UICollectionViewCell?
+            switch latchedReplacing {
+            case true?: anchor = freshLyrics
+            case false?: anchor = controls
+            case nil: anchor = staleLyrics != nil ? controls : nil // provisional until the stale card resolves
+            }
             if let anchor, let index = list.indexPath(for: anchor),
                let attributes = list.collectionViewLayout.layoutAttributesForItem(at: index) {
                 let frame = KaraokeIndependentPreview.nativeFrame(attributes)
@@ -150,6 +168,9 @@ enum KaraokeIndependentPreview {
     }
     static func prepareForReuse(_ cell: UICollectionViewCell) {
         (objc_getAssociatedObject(cell, &reuseKey) as? WeakHost)?.value?.restoreCell()
+        // A reused cell is reconfigured for current content, so it is no longer the previous song's card.
+        if let list = cell.superview as? UICollectionView,
+           let host = objc_getAssociatedObject(list, &hostKey) as? Host, host.staleLyrics === cell { host.staleLyrics = nil }
     }
     static func refresh() { for root in roots.allObjects { updatePlayer(root) } }
     static func owns(_ view: UIView) -> Bool {
